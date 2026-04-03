@@ -33,13 +33,13 @@ Tất cả tài liệu SRS được lưu trong thư mục [`/docs/srs/`](./docs/
 
 | Mã | Chức năng | Tài liệu | Trạng thái |
 |---|---|---|---|
-| AUTH-01 | 🔐 Xác thực Người dùng (Đăng nhập / Đăng ký / Quên mật khẩu) | [SRS_AUTH.md](./docs/srs/SRS_AUTH.md) | ✅ Hoàn thiện |
-| SEARCH-01 | 🔍 Tìm kiếm & Khám phá Salon | [SRS_SEARCH.md](./docs/srs/SRS_SEARCH.md) | ✅ Hoàn thiện |
-| BOOK-01 | 📅 Đặt lịch hẹn (Booking) | [SRS_BOOKING.md](./docs/srs/SRS_BOOKING.md) | ✅ Hoàn thiện |
-| PAY-01 | 💳 Thanh toán trực tuyến (VNPay / ZaloPay / Momo) | [SRS_PAYMENT.md](./docs/srs/SRS_PAYMENT.md) | ✅ Hoàn thiện |
-| SALON-01 | 💈 Quản lý Salon (Chủ Salon) | [SRS_SALON_MANAGEMENT.md](./docs/srs/SRS_SALON_MANAGEMENT.md) | ✅ Hoàn thiện |
-| REVIEW-01 | ⭐ Đánh giá & Review | [SRS_REVIEW.md](./docs/srs/SRS_REVIEW.md) | ✅ Hoàn thiện |
-| ADMIN-01 | 🛡️ Quản trị Hệ thống (Admin) | [SRS_ADMIN.md](./docs/srs/SRS_ADMIN.md) | ✅ Hoàn thiện |
+| AUTH-01 | 🔐 Xác thực Người dùng (Đăng nhập / Đăng ký / Quên mật khẩu) | [SRS_AUTH.md](./docs/srs/SRS_AUTH.md) | chưa hoàn thiện |
+| SEARCH-01 | 🔍 Tìm kiếm & Khám phá Salon | [SRS_SEARCH.md](./docs/srs/SRS_SEARCH.md) | chưa hoàn thiện |
+| BOOK-01 | 📅 Đặt lịch hẹn (Booking) | [SRS_BOOKING.md](./docs/srs/SRS_BOOKING.md) | chưa hoàn thiện |
+| PAY-01 | 💳 Thanh toán trực tuyến (VNPay / ZaloPay / Momo) | [SRS_PAYMENT.md](./docs/srs/SRS_PAYMENT.md) | chưa hoàn thiện |
+| SALON-01 | 💈 Quản lý Salon (Chủ Salon) | [SRS_SALON_MANAGEMENT.md](./docs/srs/SRS_SALON_MANAGEMENT.md) | chưa hoàn thiện |
+| REVIEW-01 | ⭐ Đánh giá & Review | [SRS_REVIEW.md](./docs/srs/SRS_REVIEW.md) | chưa hoàn thiện |
+| ADMIN-01 | 🛡️ Quản trị Hệ thống (Admin) | [SRS_ADMIN.md](./docs/srs/SRS_ADMIN.md) | chưa hoàn thiện |
 
 ---
 
