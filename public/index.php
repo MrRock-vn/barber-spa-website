@@ -7,22 +7,20 @@
 session_start();
 require_once __DIR__ . '/../config/db.php';
 
-$db = getDB();
-
 // Lấy Top salon nổi bật (rating cao nhất, status = active)
-$topSalons = $db->query(
+$topSalons = fetchAll(
     "SELECT s.*, si.image_path
      FROM salons s
      LEFT JOIN salon_images si ON si.salon_id = s.id AND si.is_primary = 1
      WHERE s.status = 'active'
      ORDER BY s.avg_rating DESC, s.total_bookings DESC
      LIMIT 6"
-)->fetchAll();
+);
 
 // Lấy danh mục dịch vụ nổi bật
-$categories = $db->query(
+$categories = fetchAll(
     "SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order LIMIT 5"
-)->fetchAll();
+);
 
 $user = currentUser();
 ?>
@@ -33,6 +31,7 @@ $user = currentUser();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barber & Spa — Đặt lịch cắt tóc & làm đẹp</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
     <style>
         :root { --brand: #e94560; --dark: #1a1a2e; }
         body { font-family: 'Segoe UI', sans-serif; }
@@ -110,11 +109,11 @@ $user = currentUser();
         <div class="ms-auto d-flex gap-2 align-items-center">
             <?php if ($user): ?>
                 <span class="text-white small">Xin chào, <?= htmlspecialchars($user['name']) ?></span>
-                <a href="/booking.php" class="btn btn-sm" style="background:var(--brand);color:#fff">Đặt lịch</a>
-                <a href="/logout.php" class="btn btn-sm btn-outline-light">Đăng xuất</a>
+                <a href="/barber-spa-website/public/my-bookings.php" class="btn btn-sm" style="background:var(--brand);color:#fff">Lịch hẹn</a>
+                <a href="/barber-spa-website/public/logout.php" class="btn btn-sm btn-outline-light">Đăng xuất</a>
             <?php else: ?>
-                <a href="/login.php"    class="btn btn-sm btn-outline-light">Đăng nhập</a>
-                <a href="/register.php" class="btn btn-sm" style="background:var(--brand);color:#fff">Đăng ký</a>
+                <a href="/barber-spa-website/public/login.php"    class="btn btn-sm btn-outline-light">Đăng nhập</a>
+                <a href="/barber-spa-website/public/register.php" class="btn btn-sm" style="background:var(--brand);color:#fff">Đăng ký</a>
             <?php endif; ?>
         </div>
     </div>
@@ -125,7 +124,7 @@ $user = currentUser();
     <div class="container">
         <h1>Đặt lịch cắt tóc & làm đẹp<br>chỉ trong vài giây ✂</h1>
         <p>Hàng trăm salon uy tín tại Hà Nội — Đặt lịch online, không cần chờ đợi</p>
-        <form class="search-box" action="/search.php" method="GET">
+        <form class="search-box" action="/barber-spa-website/public/search.php" method="GET">
             <input type="text" name="q" placeholder="Tìm tên salon, dịch vụ...">
             <button type="submit">🔍 Tìm kiếm</button>
         </form>
@@ -138,7 +137,7 @@ $user = currentUser();
         <h2 class="section-title mb-4">Dịch vụ phổ biến</h2>
         <div>
             <?php foreach ($categories as $cat): ?>
-                <a href="/search.php?category=<?= $cat['id'] ?>"
+                <a href="/barber-spa-website/public/search.php?category=<?= $cat['id'] ?>"
                    class="category-chip">
                     <?= htmlspecialchars($cat['name']) ?>
                 </a>
@@ -154,7 +153,7 @@ $user = currentUser();
         <div class="row g-4">
             <?php foreach ($topSalons as $salon): ?>
             <div class="col-md-6 col-lg-4">
-                <a href="/salon-detail.php?id=<?= $salon['id'] ?>" class="text-decoration-none text-dark">
+                <a href="/barber-spa-website/public/search.php?salon_id=<?= $salon['id'] ?>" class="text-decoration-none text-dark">
                 <div class="salon-card card h-100">
                     <img src="<?= htmlspecialchars($salon['image_path'] ?? 'https://placehold.co/400x200/1a1a2e/fff?text=Salon') ?>"
                          alt="<?= htmlspecialchars($salon['name']) ?>">
@@ -177,7 +176,7 @@ $user = currentUser();
             <?php endforeach; ?>
         </div>
         <div class="text-center mt-4">
-            <a href="/search.php" class="btn btn-outline-dark px-4">Xem tất cả salon →</a>
+            <a href="/barber-spa-website/public/search.php" class="btn btn-outline-dark px-4">Xem tất cả salon →</a>
         </div>
     </div>
 </section>

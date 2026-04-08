@@ -1,15 +1,14 @@
 <?php
 // ============================================================
-// public/login.php  — AUTH-01
-// Người làm: Nguyễn Văn Quang
-// Branch: feature/auth
+// public/login.php — AUTH-01 (Đăng nhập)
+// PHP THUẦN - MySQLi
 // ============================================================
 session_start();
 require_once __DIR__ . '/../config/db.php';
 
 // Nếu đã đăng nhập rồi → redirect về trang chủ
 if (currentUser()) {
-    header('Location: /index.php');
+    header('Location: /barber-spa-website/public/index.php');
     exit;
 }
 
@@ -27,10 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Email không đúng định dạng.';
     } else {
-        $db   = getDB();
-        $stmt = $db->prepare('SELECT * FROM users WHERE email = ? LIMIT 1');
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
+        $email_safe = escape($email);
+        $user = fetchOne("SELECT * FROM users WHERE email = '$email_safe' LIMIT 1");
 
         if (!$user) {
             $error = 'Email hoặc mật khẩu không đúng.';
@@ -38,9 +35,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (!$user['is_active']) {
             $error = 'Tài khoản đã bị đình chỉ. Vui lòng liên hệ Admin.';
 
-        } elseif ($user['locked_until'] && new DateTime() < new DateTime($user['locked_until'])) {
+        } elseif ($user['locked_until'] && strtotime($user['locked_until']) > time()) {
             // Brute-force: tài khoản đang bị khóa tạm thời
-            $remaining = (new DateTime($user['locked_until']))->diff(new DateTime())->i;
+            $remaining = ceil((strtotime($user['locked_until']) - time()) / 60);
             $error = "Tài khoản bị khóa tạm thời do nhập sai quá nhiều lần. Thử lại sau {$remaining} phút.";
 
         } elseif (!password_verify($password, $user['password'])) {
@@ -51,14 +48,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $lockUntil = date('Y-m-d H:i:s', strtotime('+1 minute'));
                 $attempts  = 0; // reset sau khi khóa
             }
-            $db->prepare('UPDATE users SET login_attempts=?, locked_until=? WHERE id=?')
-               ->execute([$attempts, $lockUntil, $user['id']]);
+            $lockUntilSQL = $lockUntil ? "'$lockUntil'" : "NULL";
+            execute("UPDATE users SET login_attempts=$attempts, locked_until=$lockUntilSQL WHERE id={$user['id']}");
             $error = 'Email hoặc mật khẩu không đúng.';
 
         } else {
             // ✅ Đăng nhập thành công
-            $db->prepare('UPDATE users SET login_attempts=0, locked_until=NULL, last_login_at=NOW(), login_ip=? WHERE id=?')
-               ->execute([$_SERVER['REMOTE_ADDR'], $user['id']]);
+            $ip = escape($_SERVER['REMOTE_ADDR']);
+            execute("UPDATE users SET login_attempts=0, locked_until=NULL, last_login_at=NOW(), login_ip='$ip' WHERE id={$user['id']}");
 
             $_SESSION['user'] = [
                 'id'    => $user['id'],
@@ -78,11 +75,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($redirect) {
                 header('Location: ' . $redirect);
             } elseif ($user['role'] === 'admin') {
-                header('Location: /admin/dashboard.php');
+                header('Location: /barber-spa-website/public/admin/dashboard.php');
             } elseif ($user['role'] === 'owner') {
-                header('Location: /owner/dashboard.php');
+                header('Location: /barber-spa-website/public/owner/dashboard.php');
             } else {
-                header('Location: /index.php');
+                header('Location: /barber-spa-website/public/index.php');
             }
             exit;
         }
@@ -96,6 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập — Barber & Spa</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/barber-spa-website/public/css/style.css">
     <style>
         body { background: #f8f9fa; }
         .auth-card {
@@ -129,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="mb-3">
             <label class="form-label d-flex justify-content-between">
                 Mật khẩu
-                <a href="/forgot-password.php" class="text-decoration-none small">Quên mật khẩu?</a>
+                <a href="/barber-spa-website/public/forgot-password.php" class="text-decoration-none small">Quên mật khẩu?</a>
             </label>
             <div class="input-group">
                 <input type="password" name="password" id="passwordInput"
@@ -150,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <hr class="my-4">
     <p class="text-center mb-0 small">
-        Chưa có tài khoản? <a href="/register.php">Đăng ký ngay</a>
+        Chưa có tài khoản? <a href="/barber-spa-website/public/register.php">Đăng ký ngay</a>
     </p>
 </div>
 

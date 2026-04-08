@@ -211,3 +211,60 @@ INSERT INTO staff_schedules (staff_id, day_of_week, start_time, end_time) VALUES
 (4,4,'09:00','19:00'),(4,5,'09:00','19:00'),(4,6,'09:00','19:00'),
 (5,1,'08:00','21:00'),(5,2,'08:00','21:00'),(5,3,'08:00','21:00'),
 (5,4,'08:00','21:00'),(5,5,'08:00','21:00'),(5,6,'08:00','21:00');
+
+-- -------------------------------------------------------
+-- BẢNG 9: reviews  (REVIEW-01)
+-- -------------------------------------------------------
+CREATE TABLE reviews (
+    id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    booking_id      INT UNSIGNED NOT NULL UNIQUE,
+    user_id         INT UNSIGNED NOT NULL,
+    salon_id        INT UNSIGNED NOT NULL,
+    staff_id        INT UNSIGNED NULL,
+    rating          TINYINT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    content         TEXT NULL,
+    images          JSON NULL,
+    status          ENUM('published','flagged','removed') NOT NULL DEFAULT 'published',
+    owner_reply     TEXT NULL,
+    owner_replied_at DATETIME NULL,
+    created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id)    REFERENCES users(id),
+    FOREIGN KEY (salon_id)   REFERENCES salons(id),
+    FOREIGN KEY (staff_id)   REFERENCES staff(id) ON DELETE SET NULL
+);
+
+-- -------------------------------------------------------
+-- BẢNG 10: payments  (PAY-01)
+-- -------------------------------------------------------
+CREATE TABLE payments (
+    id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    booking_id      INT UNSIGNED NOT NULL,
+    user_id         INT UNSIGNED NOT NULL,
+    gateway         ENUM('vnpay','zalopay','momo','cash') NOT NULL,
+    transaction_id  VARCHAR(100) NULL UNIQUE,
+    amount          DECIMAL(10,0) NOT NULL,
+    currency        VARCHAR(3) NOT NULL DEFAULT 'VND',
+    status          ENUM('pending','success','failed','refunded') NOT NULL DEFAULT 'pending',
+    gateway_response JSON NULL,
+    paid_at         DATETIME NULL,
+    created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (booking_id) REFERENCES bookings(id),
+    FOREIGN KEY (user_id)    REFERENCES users(id)
+);
+
+-- -------------------------------------------------------
+-- BẢNG 11: refunds  (PAY-01)
+-- -------------------------------------------------------
+CREATE TABLE refunds (
+    id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    payment_id      INT UNSIGNED NOT NULL,
+    amount          DECIMAL(10,0) NOT NULL,
+    reason          VARCHAR(255) NOT NULL,
+    status          ENUM('pending','success','failed') NOT NULL DEFAULT 'pending',
+    refunded_at     DATETIME NULL,
+    created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (payment_id) REFERENCES payments(id)
+);

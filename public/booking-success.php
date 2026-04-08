@@ -1,127 +1,143 @@
 <?php
-// public/booking-success.php — Trang đặt lịch thành công
+// ============================================================
+// public/booking-success.php — Đặt lịch thành công
+// ============================================================
 session_start();
 require_once __DIR__ . '/../config/db.php';
 
-if (!isset($_SESSION['user'])) { header('Location: /barber-spa-website/public/login.php'); exit; }
+requireLogin();
 
-$db        = getDB();
+$user = currentUser();
 $bookingId = (int)($_GET['id'] ?? 0);
-$user      = $_SESSION['user'];
 
-// Lấy booking (chỉ của user đang đăng nhập)
-$stmt = $db->prepare("
-    SELECT b.*, s.name AS salon_name, s.address AS salon_address, s.phone AS salon_phone,
-           st.name AS staff_name
+if (!$bookingId) {
+    header('Location: /barber-spa-website/public/index.php');
+    exit;
+}
+
+// Lấy thông tin booking
+$booking = fetchOne("
+    SELECT b.*, s.name AS salon_name, s.address, s.phone, s.open_time, s.close_time
     FROM bookings b
-    JOIN salons s  ON s.id  = b.salon_id
-    LEFT JOIN staff st ON st.id = b.staff_id
-    WHERE b.id = ? AND b.user_id = ?
+    JOIN salons s ON s.id = b.salon_id
+    WHERE b.id = $bookingId AND b.user_id = {$user['id']}
 ");
-$stmt->execute([$bookingId, $user['id']]);
-$booking = $stmt->fetch();
 
-if (!$booking) { header('Location: /barber-spa-website/public/index.php'); exit; }
+if (!$booking) {
+    header('Location: /barber-spa-website/public/index.php');
+    exit;
+}
 
 $services = json_decode($booking['services'], true);
 ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đặt lịch thành công! — Barber &amp; Spa</title>
-  <link rel="stylesheet" href="/barber-spa-website/public/css/style.css">
-  <style>
-    @keyframes popIn { from{transform:scale(.5);opacity:0} to{transform:scale(1);opacity:1} }
-    @keyframes fadeUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
-    .pop-icon { animation: popIn .5s cubic-bezier(.34,1.56,.64,1) forwards; }
-    .fade-up  { animation: fadeUp .5s ease forwards; animation-delay: .3s; opacity:0; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt lịch thành công — Barber & Spa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/barber-spa-website/public/css/style.css">
+    <style>
+        .success-container { max-width: 600px; margin: 60px auto; text-align: center; }
+        .success-icon { font-size: 4rem; margin-bottom: 20px; }
+        .success-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; color: var(--success); }
+        .booking-code { background: var(--dark2); border: 2px solid var(--border); border-radius: 12px; padding: 20px; margin: 24px 0; }
+        .code-label { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 8px; }
+        .code-value { font-size: 1.8rem; font-weight: 700; color: var(--brand); font-family: monospace; }
+        .detail-box { background: var(--dark2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: left; }
+        .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { color: var(--text-muted); }
+        .detail-value { font-weight: 600; }
+        .action-buttons { display: flex; gap: 12px; margin-top: 24px; }
+        .btn-action { flex: 1; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.2s; }
+        .btn-primary-action { background: var(--brand); color: #fff; }
+        .btn-primary-action:hover { background: #c73652; }
+        .btn-secondary-action { background: transparent; color: var(--text); border: 1.5px solid var(--border); }
+        .btn-secondary-action:hover { border-color: var(--text); }
+        .info-message { background: rgba(200, 150, 62, 0.1); border: 1px solid var(--primary); border-radius: 8px; padding: 16px; margin-bottom: 20px; color: #ffd699; font-size: 0.9rem; }
+    </style>
 </head>
 <body>
 <?php require_once __DIR__ . '/../includes/navbar.php'; ?>
 
-<div class="container" style="max-width:600px;padding-top:60px;padding-bottom:80px;text-align:center">
+<div class="success-container">
+    <div class="success-icon">✅</div>
+    <h1 class="success-title">Đặt lịch thành công!</h1>
+    <p style="color: var(--text-muted); margin-bottom: 24px;">
+        Lịch hẹn của bạn đã được ghi nhận. Vui lòng lưu mã lịch để theo dõi.
+    </p>
 
-  <!-- Icon -->
-  <div class="pop-icon" style="width:90px;height:90px;background:rgba(76,175,130,.15);border:2px solid rgba(76,175,130,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:2.5rem">
-    ✅
-  </div>
-
-  <div class="fade-up">
-    <h1 style="font-family:'Playfair Display',serif;font-size:2rem;margin-bottom:8px">Đặt lịch thành công!</h1>
-    <p style="color:var(--text-muted);margin-bottom:32px">Salon sẽ liên hệ xác nhận lịch hẹn của bạn sớm nhất.</p>
-
-    <!-- Chi tiết -->
-    <div class="summary-box" style="text-align:left;margin-bottom:28px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.07)">
-        <span style="font-size:.8rem;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted)">Mã lịch hẹn</span>
-        <span style="font-family:monospace;font-size:1.1rem;color:var(--primary);font-weight:700">#<?= str_pad($booking['id'], 6, '0', STR_PAD_LEFT) ?></span>
-      </div>
-
-      <div class="summary-row"><span style="color:var(--text-muted)">Salon</span><span style="font-weight:600"><?= htmlspecialchars($booking['salon_name']) ?></span></div>
-      <div class="summary-row"><span style="color:var(--text-muted)">Địa chỉ</span><span><?= htmlspecialchars($booking['salon_address']) ?></span></div>
-
-      <?php if ($booking['salon_phone']): ?>
-      <div class="summary-row"><span style="color:var(--text-muted)">Điện thoại</span><a href="tel:<?= $booking['salon_phone'] ?>" style="color:var(--primary)"><?= $booking['salon_phone'] ?></a></div>
-      <?php endif; ?>
-
-      <div class="summary-row">
-        <span style="color:var(--text-muted)">Dịch vụ</span>
-        <span style="text-align:right;max-width:65%"><?= implode(', ', array_column($services, 'name')) ?></span>
-      </div>
-
-      <div class="summary-row">
-        <span style="color:var(--text-muted)">Nhân viên</span>
-        <span><?= $booking['staff_name'] ? htmlspecialchars($booking['staff_name']) : 'Bất kỳ' ?></span>
-      </div>
-
-      <div class="summary-row">
-        <span style="color:var(--text-muted)">Ngày hẹn</span>
-        <span style="font-weight:600"><?= date('d/m/Y', strtotime($booking['booking_date'])) ?></span>
-      </div>
-
-      <div class="summary-row">
-        <span style="color:var(--text-muted)">Giờ hẹn</span>
-        <span style="font-weight:600"><?= substr($booking['start_time'],0,5) ?> – <?= substr($booking['end_time'],0,5) ?></span>
-      </div>
-
-      <div class="summary-row">
-        <span style="color:var(--text-muted)">Thanh toán</span>
-        <span><?= $booking['payment_method']==='online' ? '💳 Online' : '🏪 Tại quầy' ?></span>
-      </div>
-
-      <div class="summary-row" style="border-bottom:none;padding-top:14px;border-top:1px solid rgba(255,255,255,.07)">
-        <span style="font-weight:700">Tổng tiền</span>
-        <span class="summary-total"><?= number_format($booking['total_price']) ?>đ</span>
-      </div>
+    <!-- MÃ LỊCH -->
+    <div class="booking-code">
+        <div class="code-label">Mã lịch hẹn</div>
+        <div class="code-value">#<?= str_pad($booking['id'], 6, '0', STR_PAD_LEFT) ?></div>
     </div>
 
-    <!-- Trạng thái -->
-    <div class="alert alert-info" style="margin-bottom:24px">
-      ⏳ Trạng thái: <strong>Chờ xác nhận</strong> — Salon sẽ xác nhận trong vòng 30 phút.
+    <!-- THÔNG TIN CHI TIẾT -->
+    <div class="detail-box">
+        <div class="detail-row">
+            <span class="detail-label">💈 Salon</span>
+            <span class="detail-value"><?= htmlspecialchars($booking['salon_name']) ?></span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">📍 Địa chỉ</span>
+            <span class="detail-value"><?= htmlspecialchars($booking['address']) ?></span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">📞 Điện thoại</span>
+            <span class="detail-value"><?= htmlspecialchars($booking['phone']) ?></span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">📅 Ngày hẹn</span>
+            <span class="detail-value">
+                <?= date('d/m/Y', strtotime($booking['booking_date'])) ?>
+                (<?= ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date('w', strtotime($booking['booking_date']))] ?>)
+            </span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">🕐 Giờ hẹn</span>
+            <span class="detail-value"><?= substr($booking['start_time'], 0, 5) ?> - <?= substr($booking['end_time'], 0, 5) ?></span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">💇 Dịch vụ</span>
+            <span class="detail-value">
+                <?php foreach ($services as $sv): ?>
+                    <div><?= htmlspecialchars($sv['name']) ?> (<?= $sv['duration'] ?> phút)</div>
+                <?php endforeach; ?>
+            </span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">💰 Tổng tiền</span>
+            <span class="detail-value" style="color: var(--brand);">
+                <?= number_format($booking['total_price']) ?>đ
+            </span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">💳 Thanh toán</span>
+            <span class="detail-value">
+                <?= $booking['payment_method'] === 'online' ? 'Online' : 'Tại quầy' ?>
+            </span>
+        </div>
     </div>
 
-    <!-- Ghi chú -->
-    <?php if ($booking['notes']): ?>
-    <div class="alert" style="background:var(--dark2);border:1px solid rgba(255,255,255,.1);text-align:left;margin-bottom:24px">
-      📝 <strong>Ghi chú của bạn:</strong> <?= nl2br(htmlspecialchars($booking['notes'])) ?>
+    <!-- THÔNG BÁO -->
+    <div class="info-message">
+        <strong>📌 Lưu ý:</strong> Vui lòng đến salon trước 15 phút. Nếu không thể đến, hãy hủy lịch trước 2 giờ để tránh phí.
     </div>
-    <?php endif; ?>
 
-    <!-- Buttons -->
-    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
-      <a href="/barber-spa-website/public/my-bookings.php" class="btn-primary-custom">
-        📋 Xem lịch hẹn của tôi
-      </a>
-      <a href="/barber-spa-website/public/search.php" class="btn-outline-custom">
-        🔍 Đặt lịch khác
-      </a>
+    <!-- NÚT HÀNH ĐỘNG -->
+    <div class="action-buttons">
+        <a href="/barber-spa-website/public/my-bookings.php" class="btn-action btn-primary-action">
+            📅 Xem lịch hẹn của tôi
+        </a>
+        <a href="/barber-spa-website/public/index.php" class="btn-action btn-secondary-action">
+            🏠 Về trang chủ
+        </a>
     </div>
-  </div>
 </div>
 
-<footer><div class="container"><p>© 2026 Barber &amp; Spa</p></div></footer>
+<footer style="margin-top: 60px;"><div class="container"><p>© 2026 Barber & Spa</p></div></footer>
 </body>
 </html>
