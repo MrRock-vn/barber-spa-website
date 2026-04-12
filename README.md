@@ -184,12 +184,16 @@ barber-spa/
 
 Ví dụ:
 
-C:\aiu\htdocs\barber-spa 3. Khởi động Apache và MySQL trong XAMPP
+C:\aiu\htdocs\barber-spa
+
+3.  Khởi động Apache và MySQL trong XAMPP
 
 Mở XAMPP Control Panel rồi start:
 
 Apache
-MySQL 4. Tạo database
+MySQL
+
+4. Tạo database
 
 Vào phpMyAdmin và tạo database mới:
 
@@ -197,7 +201,9 @@ barber_spa
 
 Khuyến nghị collation:
 
-utf8mb4_unicode_ci 5. Import database
+utf8mb4_unicode_ci
+
+5. Import database
 
 Mở phpMyAdmin:
 
@@ -205,7 +211,9 @@ Chọn database barber_spa
 Chọn tab Import
 Chọn file:
 database/schema.sql
-Bấm Import 6. Cấu hình kết nối database
+Bấm Import
+
+6. Cấu hình kết nối database
 
 Mở file:
 
@@ -216,7 +224,9 @@ cập nhật đúng thông tin máy bạn, ví dụ:
 define('DB_HOST', '127.0.0.1');
 define('DB_NAME', 'barber_spa');
 define('DB_USER', 'root');
-define('DB_PASS', ''); 7. Truy cập dự án
+define('DB_PASS', '');
+
+7. Truy cập dự án
 
 Mở trình duyệt:
 
