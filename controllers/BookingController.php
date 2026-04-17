@@ -264,18 +264,18 @@ class BookingController
 ]);
     }
 
-    public function myBookings(): void
-    {
-        Auth::requireLogin();
+  public function myBookings(): void
+{
+    Auth::requireLogin();
 
-        $bookings = $this->bookingModel->getByUserId((int) Auth::id());
-        render('booking/show', [
-    'pageTitle' => 'Chi tiết lịch hẹn - ' . APP_NAME,
-    'navSection' => 'user',
-    'booking' => $booking,
-]);
-    }
+    $bookings = $this->bookingModel->getByUserId((int) Auth::id());
 
+    render('booking/my-bookings', [
+        'pageTitle' => 'Lịch hẹn của tôi - ' . APP_NAME,
+        'navSection' => 'user',
+        'bookings' => $bookings,
+    ]);
+}
     public function cancel(): void
     {
         Auth::requireLogin();

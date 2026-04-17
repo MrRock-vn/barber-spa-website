@@ -219,8 +219,14 @@ class Payment
         return (int) ($row['total'] ?? 0);
     }
 
-    public function isProcessedTransaction(string $transactionId): bool
-    {
-        return $this->findByTransactionId($transactionId) !== null;
+   public function isProcessedTransaction(string $transactionId): bool
+{
+    $payment = $this->findByTransactionId($transactionId);
+
+    if (!$payment) {
+        return false;
     }
+
+    return in_array($payment['status'], ['success', 'failed', 'refunded'], true);
+}
 }

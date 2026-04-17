@@ -37,11 +37,11 @@ class PaymentController
         $payment = $this->paymentModel->findByBookingId($bookingId);
 
         render('payment/index', [
-    'pageTitle' => 'Thanh toán - ' . APP_NAME,
-    'navSection' => 'user',
-    'booking' => $booking,
-    'payment' => $payment,
-]);
+            'pageTitle' => 'Thanh toán - ' . APP_NAME,
+            'navSection' => 'user',
+            'booking' => $booking,
+            'payment' => $payment,
+        ]);
     }
 
     public function confirm(): void
@@ -78,51 +78,416 @@ class PaymentController
             redirect(BASE_URL . '/booking/' . $bookingId);
         }
 
-        if ($action === 'simulate_online_success') {
-            $existingPayment = $this->paymentModel->findByBookingId($bookingId);
-
-            $gatewayResponse = json_encode([
-                'message' => 'Simulated online payment success',
-                'booking_id' => $bookingId,
-                'user_id' => (int) Auth::id(),
-                'confirmed_at' => date('Y-m-d H:i:s'),
-            ], JSON_UNESCAPED_UNICODE);
-
-            if ($existingPayment) {
-                $this->paymentModel->markSuccess(
-                    (int) $existingPayment['id'],
-                    $gatewayResponse,
-                    date('Y-m-d H:i:s')
-                );
-            } else {
-                $transactionId = 'SIM_' . $bookingId . '_' . time();
-
-                $paymentId = $this->paymentModel->create([
-                    'booking_id' => $bookingId,
-                    'user_id' => (int) Auth::id(),
-                    'gateway' => 'vnpay',
-                    'transaction_id' => $transactionId,
-                    'amount' => (float) $booking['total_price'],
-                    'currency' => 'VND',
-                    'status' => 'success',
-                    'gateway_response' => $gatewayResponse,
-                    'paid_at' => date('Y-m-d H:i:s'),
-                ]);
-
-                $this->paymentModel->markSuccess(
-                    $paymentId,
-                    $gatewayResponse,
-                    date('Y-m-d H:i:s')
-                );
-            }
-
-            $this->bookingModel->updatePaymentStatus($bookingId, 'paid');
-
-            flash('success', 'Thanh toán online thành công (giả lập).');
-            redirect(BASE_URL . '/booking/' . $bookingId);
-        }
-
         flash('error', 'Thao tác thanh toán không hợp lệ.');
         redirect(BASE_URL . '/payment?booking_id=' . $bookingId);
     }
+
+    public function vnpay(): void
+{
+    Auth::requireLogin();
+
+    $config = require __DIR__ . '/../config/vnpay.php';
+
+    $bookingId = (int)($_GET['booking_id'] ?? 0);
+    $booking = $this->bookingModel->findById($bookingId);
+
+    if (!$booking) {
+        flash('error', 'Không tìm thấy lịch hẹn.');
+        redirect(BASE_URL . '/my-bookings');
+    }
+
+    $amount = (float)$booking['total_price'];
+    $vnp_TxnRef = 'BOOK_' . $bookingId . '_' . time();
+
+    // Lưu payment pending
+    $this->paymentModel->create([
+        'booking_id'     => $bookingId,
+        'user_id'        => (int)$booking['user_id'],
+        'gateway'        => 'vnpay',
+        'transaction_id' => $vnp_TxnRef,
+        'amount'         => $amount,
+        'currency'       => 'VND',
+        'status'         => 'pending',
+    ]);
+
+    $inputData = [
+        'vnp_Version'    => $config['version'],
+        'vnp_Command'    => 'pay',
+        'vnp_TmnCode'    => trim($config['tmn_code']),
+        'vnp_Amount'     => (int)round($amount * 100),
+        'vnp_CurrCode'   => 'VND',
+        'vnp_TxnRef'     => $vnp_TxnRef,
+        'vnp_OrderInfo'  => 'Thanh toan booking ' . $bookingId,
+        'vnp_OrderType'  => 'other',
+        'vnp_Locale'     => 'vn',
+        'vnp_ReturnUrl'  => trim($config['return_url']),
+        'vnp_IpAddr'     => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
+        'vnp_CreateDate' => date('YmdHis'),
+        'vnp_ExpireDate' => date('YmdHis', strtotime('+15 minutes')),
+    ];
+
+    // Sắp xếp tham số
+    ksort($inputData);
+
+    // Tạo chuỗi hash chuẩn RFC3986
+    $hashString = http_build_query($inputData, '', '&', PHP_QUERY_RFC3986);
+
+    // Tính chữ ký
+    $vnpSecureHash = hash_hmac(
+        'sha512',
+        $hashString,
+        trim($config['hash_secret'])
+    );
+
+    // Tạo URL thanh toán
+    $paymentUrl = $config['pay_url'] . '?' . $hashString . '&vnp_SecureHash=' . $vnpSecureHash;
+
+    header('Location: ' . $paymentUrl);
+    exit;
+}
+
+public function vnpayReturn(): void
+{
+    $config = require __DIR__ . '/../config/vnpay.php';
+
+    $inputData = $_GET;
+    $receivedHash = (string)($inputData['vnp_SecureHash'] ?? '');
+
+    unset($inputData['vnp_SecureHash'], $inputData['vnp_SecureHashType']);
+    ksort($inputData);
+
+    // Tạo chuỗi hash giống lúc gửi
+    $hashString = http_build_query($inputData, '', '&', PHP_QUERY_RFC3986);
+
+    $calculatedHash = hash_hmac(
+        'sha512',
+        $hashString,
+        trim($config['hash_secret'])
+    );
+
+    // Debug mode - bỏ comment khi test
+    error_log('=== VNPAY RETURN DEBUG ===');
+    error_log('Received hash   : ' . $receivedHash);
+    error_log('Calculated hash : ' . $calculatedHash);
+    error_log('Hash string     : ' . $hashString);
+    error_log('Config hash_secret: ' . trim($config['hash_secret']));
+    error_log('Response code   : ' . ($_GET['vnp_ResponseCode'] ?? 'N/A'));
+
+    // IMPORTANT: Enable this only in development/sandbox to skip hash verification
+    $skipHashCheck = false; // Set to true for testing only
+    
+    if (!$skipHashCheck && !hash_equals($calculatedHash, $receivedHash)) {
+        flash('error', 'Sai chữ ký bảo mật từ VNPay. Kiểm tra lại TMN Code và Hash Secret.');
+        redirect(BASE_URL . '/my-bookings');
+    }
+
+    $txnRef = $_GET['vnp_TxnRef'] ?? '';
+    $responseCode = $_GET['vnp_ResponseCode'] ?? '';
+    $transactionNo = $_GET['vnp_TransactionNo'] ?? '';
+    $amount = (int)($_GET['vnp_Amount'] ?? 0);
+
+    $payment = $this->paymentModel->findByTransactionId($txnRef);
+
+    if (!$payment) {
+        flash('error', 'Không tìm thấy giao dịch.');
+        redirect(BASE_URL . '/my-bookings');
+    }
+
+    if ($responseCode === '00') {
+        $this->paymentModel->markSuccess(
+            (int)$payment['id'],
+            json_encode($_GET, JSON_UNESCAPED_UNICODE),
+            date('Y-m-d H:i:s')
+        );
+        $this->bookingModel->updatePaymentStatus((int)$payment['booking_id'], 'paid');
+        flash('success', 'Thanh toán VNPay thành công. Mã GD: ' . $transactionNo);
+    } else {
+        $this->paymentModel->markFailed(
+            (int)$payment['id'],
+            json_encode($_GET, JSON_UNESCAPED_UNICODE)
+        );
+        $this->bookingModel->updatePaymentStatus((int)$payment['booking_id'], 'failed');
+        flash('error', 'Thanh toán thất bại.');
+    }
+
+    redirect(BASE_URL . '/booking/' . (int)$payment['booking_id']);
+}
+
+public function vnpayIpn(): void
+{
+    $config = require __DIR__ . '/../config/vnpay.php';
+
+    header('Content-Type: application/json');
+
+    $inputData = $_GET;
+    $receivedHash = (string)($inputData['vnp_SecureHash'] ?? '');
+
+    unset($inputData['vnp_SecureHash'], $inputData['vnp_SecureHashType']);
+    ksort($inputData);
+
+    $hashString = http_build_query($inputData, '', '&', PHP_QUERY_RFC3986);
+    $calculatedHash = hash_hmac('sha512', $hashString, trim($config['hash_secret']));
+
+    if (!hash_equals($calculatedHash, $receivedHash)) {
+        echo json_encode(['RspCode' => '97', 'Message' => 'Invalid signature']);
+        exit;
+    }
+
+    $txnRef = $_GET['vnp_TxnRef'] ?? '';
+    $responseCode = $_GET['vnp_ResponseCode'] ?? '';
+
+    $payment = $this->paymentModel->findByTransactionId($txnRef);
+
+    if (!$payment) {
+        echo json_encode(['RspCode' => '01', 'Message' => 'Order not found']);
+        exit;
+    }
+
+    if ($responseCode === '00') {
+        $this->paymentModel->markSuccess(
+            (int)$payment['id'],
+            json_encode($_GET, JSON_UNESCAPED_UNICODE),
+            date('Y-m-d H:i:s')
+        );
+        $this->bookingModel->updatePaymentStatus((int)$payment['booking_id'], 'paid');
+    } else {
+        $this->paymentModel->markFailed(
+            (int)$payment['id'],
+            json_encode($_GET, JSON_UNESCAPED_UNICODE)
+        );
+        $this->bookingModel->updatePaymentStatus((int)$payment['booking_id'], 'failed');
+    }
+
+    echo json_encode(['RspCode' => '00', 'Message' => 'Confirm Success']);
+    exit;
+}
+
+    private function formatVnpayDate(string $payDate): ?string
+    {
+        if ($payDate === '' || strlen($payDate) !== 14) {
+            return date('Y-m-d H:i:s');
+        }
+
+        $dt = DateTime::createFromFormat('YmdHis', $payDate);
+        return $dt ? $dt->format('Y-m-d H:i:s') : date('Y-m-d H:i:s');
+    }
+
+    public function momo(): void
+{
+    Auth::requireLogin();
+
+    $config = require __DIR__ . '/../config/momo.php';
+
+    $bookingId = (int)($_GET['booking_id'] ?? 0);
+    if ($bookingId <= 0) {
+        flash('error', 'Thiếu mã lịch hẹn.');
+        redirect(BASE_URL . '/my-bookings');
+    }
+
+    $booking = $this->bookingModel->findById($bookingId);
+    if (!$booking) {
+        flash('error', 'Không tìm thấy lịch hẹn.');
+        redirect(BASE_URL . '/my-bookings');
+    }
+
+    if ((int)$booking['user_id'] !== (int)Auth::id()) {
+        flash('error', 'Bạn không có quyền thanh toán lịch hẹn này.');
+        redirect(BASE_URL . '/my-bookings');
+    }
+
+    $existingPayment = $this->paymentModel->findByBookingId($bookingId);
+    if ($existingPayment && ($existingPayment['status'] ?? '') === 'success') {
+        flash('success', 'Lịch hẹn này đã được thanh toán.');
+        redirect(BASE_URL . '/booking/' . $bookingId);
+    }
+
+    $amount = (int)round((float)($booking['total_price'] ?? 0));
+    if ($amount < 1000) {
+        flash('error', 'Số tiền thanh toán MoMo phải từ 1.000 VND.');
+        redirect(BASE_URL . '/booking/' . $bookingId);
+    }
+
+    if ($existingPayment && ($existingPayment['status'] ?? '') === 'pending' && ($existingPayment['gateway'] ?? '') === 'momo') {
+        $orderId = (string)$existingPayment['transaction_id'];
+    } else {
+        $orderId = 'MOMO_BOOK_' . $bookingId . '_' . time();
+
+        $this->paymentModel->create([
+            'booking_id'     => $bookingId,
+            'user_id'        => (int)$booking['user_id'],
+            'gateway'        => 'momo',
+            'transaction_id' => $orderId,
+            'amount'         => $amount,
+            'currency'       => 'VND',
+            'status'         => 'pending',
+        ]);
+    }
+
+    $requestId = (string)time();
+    $orderInfo = 'Thanh toan booking ' . $bookingId;
+    $extraData = '';
+
+    $rawHash = "accessKey=" . $config['access_key']
+        . "&amount=" . $amount
+        . "&extraData=" . $extraData
+        . "&ipnUrl=" . $config['ipn_url']
+        . "&orderId=" . $orderId
+        . "&orderInfo=" . $orderInfo
+        . "&partnerCode=" . $config['partner_code']
+        . "&redirectUrl=" . $config['redirect_url']
+        . "&requestId=" . $requestId
+        . "&requestType=" . $config['request_type'];
+
+    $signature = hash_hmac('sha256', $rawHash, $config['secret_key']);
+
+    $data = [
+        'partnerCode' => $config['partner_code'],
+        'partnerName' => 'Test',
+        'storeId'     => 'MomoTestStore',
+        'requestId'   => $requestId,
+        'amount'      => $amount,
+        'orderId'     => $orderId,
+        'orderInfo'   => $orderInfo,
+        'redirectUrl' => $config['redirect_url'],
+        'ipnUrl'      => $config['ipn_url'],
+        'lang'        => $config['lang'],
+        'extraData'   => $extraData,
+        'requestType' => $config['request_type'],
+        'signature'   => $signature,
+    ];
+
+    $ch = curl_init($config['endpoint']);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json',
+        'Content-Length: ' . strlen(json_encode($data))
+    ]);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+
+    $result = curl_exec($ch);
+    curl_close($ch);
+
+    $jsonResult = json_decode($result, true);
+
+    if (!is_array($jsonResult) || empty($jsonResult['payUrl'])) {
+        flash('error', 'Không tạo được liên kết thanh toán MoMo.');
+        redirect(BASE_URL . '/booking/' . $bookingId);
+    }
+
+    header('Location: ' . $jsonResult['payUrl']);
+    exit;
+}
+
+public function momoReturn(): void
+{
+    $orderId = trim((string)($_GET['orderId'] ?? ''));
+    $resultCode = trim((string)($_GET['resultCode'] ?? ''));
+    $message = trim((string)($_GET['message'] ?? ''));
+    $transId = trim((string)($_GET['transId'] ?? ''));
+
+    $payment = $this->paymentModel->findByTransactionId($orderId);
+
+    if (!$payment) {
+        flash('error', 'Không tìm thấy giao dịch MoMo.');
+        redirect(BASE_URL . '/my-bookings');
+    }
+
+    if ((string)$payment['status'] === 'pending') {
+        if ($resultCode === '0') {
+            $this->paymentModel->markSuccess(
+                (int)$payment['id'],
+                json_encode($_GET, JSON_UNESCAPED_UNICODE),
+                date('Y-m-d H:i:s')
+            );
+            $this->bookingModel->updatePaymentStatus((int)$payment['booking_id'], 'paid');
+        } else {
+            $this->paymentModel->markFailed(
+                (int)$payment['id'],
+                json_encode($_GET, JSON_UNESCAPED_UNICODE)
+            );
+            $this->bookingModel->updatePaymentStatus((int)$payment['booking_id'], 'failed');
+        }
+    }
+
+    flash(
+        $resultCode === '0' ? 'success' : 'error',
+        $resultCode === '0'
+            ? 'Thanh toán MoMo thành công. Mã giao dịch: ' . $transId
+            : 'Thanh toán MoMo thất bại: ' . $message
+    );
+
+    redirect(BASE_URL . '/booking/' . (int)$payment['booking_id']);
+}
+
+public function momoIpn(): void
+{
+    header('Content-Type: application/json; charset=utf-8');
+
+    $config = require __DIR__ . '/../config/momo.php';
+
+    $rawBody = file_get_contents('php://input');
+    $data = json_decode($rawBody, true);
+
+    if (!is_array($data)) {
+        echo json_encode(['status' => 'error', 'message' => 'Invalid payload']);
+        exit;
+    }
+
+    $signature = (string)($data['signature'] ?? '');
+
+    $rawHash = "accessKey=" . $config['access_key']
+        . "&amount=" . ($data['amount'] ?? '')
+        . "&extraData=" . ($data['extraData'] ?? '')
+        . "&message=" . ($data['message'] ?? '')
+        . "&orderId=" . ($data['orderId'] ?? '')
+        . "&orderInfo=" . ($data['orderInfo'] ?? '')
+        . "&orderType=" . ($data['orderType'] ?? '')
+        . "&partnerCode=" . ($data['partnerCode'] ?? '')
+        . "&payType=" . ($data['payType'] ?? '')
+        . "&requestId=" . ($data['requestId'] ?? '')
+        . "&responseTime=" . ($data['responseTime'] ?? '')
+        . "&resultCode=" . ($data['resultCode'] ?? '')
+        . "&transId=" . ($data['transId'] ?? '');
+
+    $checkSignature = hash_hmac('sha256', $rawHash, $config['secret_key']);
+
+    if (!hash_equals($checkSignature, $signature)) {
+        echo json_encode(['status' => 'error', 'message' => 'Invalid signature']);
+        exit;
+    }
+
+    $orderId = trim((string)($data['orderId'] ?? ''));
+    $payment = $this->paymentModel->findByTransactionId($orderId);
+
+    if (!$payment) {
+        echo json_encode(['status' => 'error', 'message' => 'Order not found']);
+        exit;
+    }
+
+    if ((string)$payment['status'] !== 'pending') {
+        echo json_encode(['status' => 'ok', 'message' => 'Already processed']);
+        exit;
+    }
+
+    if ((string)($data['resultCode'] ?? '') === '0') {
+        $this->paymentModel->markSuccess(
+            (int)$payment['id'],
+            json_encode($data, JSON_UNESCAPED_UNICODE),
+            date('Y-m-d H:i:s')
+        );
+        $this->bookingModel->updatePaymentStatus((int)$payment['booking_id'], 'paid');
+    } else {
+        $this->paymentModel->markFailed(
+            (int)$payment['id'],
+            json_encode($data, JSON_UNESCAPED_UNICODE)
+        );
+        $this->bookingModel->updatePaymentStatus((int)$payment['booking_id'], 'failed');
+    }
+
+    echo json_encode(['status' => 'ok']);
+    exit;
+}
 }

@@ -126,6 +126,11 @@ function paymentStatusBadgeClass(string $status): string
             <div class="d-flex gap-2 flex-wrap">
                 <a href="<?= e(BASE_URL . '/my-bookings') ?>" class="btn btn-dark">Quay lại</a>
 
+                <?php if (($booking['payment_method'] ?? '') === 'online' && ($booking['payment_status'] ?? '') === 'unpaid'): ?>
+                    <a href="<?= e(BASE_URL . '/payment/momo?booking_id=' . $booking['id']) ?>" class="btn btn-danger">Thanh toán MoMo</a>
+                    <a href="<?= e(BASE_URL . '/payment/vnpay?booking_id=' . $booking['id']) ?>" class="btn btn-primary">Thanh toán VNPay</a>
+                <?php endif; ?>
+
                 <?php if (in_array($booking['status'], ['pending', 'confirmed'], true)): ?>
                     <form method="POST" action="<?= e(BASE_URL . '/cancel-booking') ?>">
                         <?= csrfInput() ?>

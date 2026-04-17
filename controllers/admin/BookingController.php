@@ -39,11 +39,13 @@ class BookingController
 
         $bookings = $this->bookingModel->getAllForAdmin($filters);
         $salons = $this->salonModel->getAllForAdmin([]);
-render('admin/users/index', [
-    'pageTitle' => 'Admin Users - ' . APP_NAME,
-    'navSection' => 'admin',
-    'users' => $users,
-]);
+
+        render('admin/bookings/index', [
+            'pageTitle' => 'Admin Bookings - ' . APP_NAME,
+            'navSection' => 'admin',
+            'bookings' => $bookings,
+            'salons' => $salons,
+        ]);
     }
 
     private function handlePostAction(): void

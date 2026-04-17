@@ -531,6 +531,19 @@ class Salon
         return (int) ($row['total'] ?? 0);
     }
 
+    public function countSalonsByStatus(string $status): int
+    {
+        $sql = "SELECT COUNT(*) AS total
+                FROM salons
+                WHERE status = :status";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['status' => $status]);
+        $row = $stmt->fetch();
+
+        return (int) ($row['total'] ?? 0);
+    }
+
     public function getRecentForAdmin(int $limit = 5): array
     {
         $sql = "SELECT s.*,

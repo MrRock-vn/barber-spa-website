@@ -14,10 +14,12 @@ function ownerDashBookingStatusBadgeClass(string $status): string
 }
 ?>
 
-<div class="container">
-    <div class="mb-4">
-        <h2 class="page-section-title">Owner Dashboard</h2>
-        <div class="page-section-subtitle"><?= e($salon['name']) ?></div>
+<div class="admin-page owner-page">
+    <div class="admin-page-header mb-4">
+        <div class="admin-page-title-group">
+            <h2 class="page-section-title">Owner Dashboard</h2>
+            <div class="page-section-subtitle"><?= e($salon['name']) ?></div>
+        </div>
     </div>
 
     <div class="row g-3 mb-4">

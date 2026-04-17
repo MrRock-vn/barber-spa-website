@@ -18,6 +18,7 @@ function paymentStatusBadgeClass(string $status): string
     return match ($status) {
         'paid' => 'bg-success',
         'unpaid' => 'bg-secondary',
+        'failed' => 'bg-danger',
         default => 'bg-secondary',
     };
 }
@@ -143,20 +144,15 @@ if (!is_array($serviceItems)) {
 
             <div class="card mb-4">
                 <div class="card-body p-4">
-                    <h5 class="fw-bold mb-3">Thanh toán online</h5>
+                    <h5 class="fw-bold mb-3">Thanh toán online qua VNPay</h5>
                     <p class="text-muted small">
-                        Bản local hiện dùng nút giả lập để test luồng thanh toán online thành công.
+                        Bấm nút bên dưới để chuyển sang cổng thanh toán VNPay.
                     </p>
 
-                    <form method="POST" action="<?= e(BASE_URL . '/payment/confirm') ?>">
-                        <?= csrfInput() ?>
-                        <input type="hidden" name="booking_id" value="<?= e((string) $booking['id']) ?>">
-                        <input type="hidden" name="action" value="simulate_online_success">
-
-                        <button type="submit" class="btn btn-danger w-100">
-                            Giả lập thanh toán online thành công
-                        </button>
-                    </form>
+                    <a href="<?= e(BASE_URL . '/payment/vnpay?booking_id=' . (int) $booking['id']) ?>"
+                       class="btn btn-primary w-100">
+                        Thanh toán qua VNPay
+                    </a>
                 </div>
             </div>
 

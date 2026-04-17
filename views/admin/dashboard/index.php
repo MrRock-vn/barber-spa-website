@@ -26,10 +26,79 @@ function adminDashSalonStatusBadgeClass(string $status): string
 }
 ?>
 
-<div class="container">
-    <div class="mb-4">
-        <h2 class="page-section-title">Admin Dashboard</h2>
-        <div class="page-section-subtitle">Tổng quan hệ thống Barber Spa</div>
+<div class="admin-page admin-dashboard container">
+    <div class="admin-page-header mb-4">
+        <div class="admin-page-title-group">
+            <h2 class="page-section-title">Admin Dashboard</h2>
+            <div class="page-section-subtitle">Tổng quan hệ thống Barber Spa</div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-5">
+            <div class="card admin-card-surface admin-table-card h-100">
+                <div class="card-body">
+                    <h5 class="admin-section-title mb-3">KPI chính</h5>
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <tbody>
+                                <tr>
+                                    <th class="py-3 border-top-0">Tổng users</th>
+                                    <td class="py-3 text-end"><?= e((string) $totalUsers) ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Tổng salons active</th>
+                                    <td class="text-end"><?= e((string) $activeSalons) ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Bookings completed</th>
+                                    <td class="text-end"><?= e((string) $completedBookings) ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Bookings cancelled</th>
+                                    <td class="text-end"><?= e((string) $cancelledBookings) ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Total revenue</th>
+                                    <td class="text-end text-danger fw-bold"><?= e(formatMoney($totalRevenue)) ?></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-7">
+            <div class="card admin-card-surface h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="admin-section-title mb-1">Thông báo hệ thống</h5>
+                            <div class="small text-muted">Thông tin quan trọng dành cho admin</div>
+                        </div>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item px-0 border-0 py-2">
+                            <div class="fw-semibold">Salons đang chờ duyệt</div>
+                            <div class="small text-muted">Hiện tại có <?= e((string) $pendingSalons) ?> salon cần kiểm tra.</div>
+                        </div>
+                        <div class="list-group-item px-0 border-0 py-2">
+                            <div class="fw-semibold">Bookings hôm nay</div>
+                            <div class="small text-muted">Có <?= e((string) $todayBookings) ?> booking mới trong ngày.</div>
+                        </div>
+                        <div class="list-group-item px-0 border-0 py-2">
+                            <div class="fw-semibold">Tổng doanh thu</div>
+                            <div class="small text-muted">Doanh thu hoàn tất hiện tại: <?= e(formatMoney($totalRevenue)) ?>.</div>
+                        </div>
+                        <div class="list-group-item px-0 border-0 py-2">
+                            <div class="fw-semibold">Tình trạng booking</div>
+                            <div class="small text-muted">Hoàn tất: <?= e((string) $completedBookings) ?>, Hủy: <?= e((string) $cancelledBookings) ?>.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="row g-3 mb-4">

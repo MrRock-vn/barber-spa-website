@@ -67,7 +67,10 @@ barber-spa/
 │       ├── vnpay-redirect.php
 │       └── vnpay-return.php
 ├── config/
-│   └── db.php
+│   ├── db.php
+│   ├── mail.php
+│   ├── momo.php          [NEW] Cấu hình MoMo payment
+│   ├── vnpay.php         [NEW] Cấu hình VNPay payment
 ├── controllers/
 │   ├── AuthController.php
 │   ├── BookingController.php
@@ -93,7 +96,8 @@ barber-spa/
 ├── core/
 │   ├── Auth.php
 │   ├── Database.php
-│   └── helpers.php
+│   ├── helpers.php
+│   └── Mailer.php
 ├── database/
 │   └── schema.sql
 ├── docs/
@@ -127,17 +131,33 @@ barber-spa/
 │       └── services/
 ├── views/
 │   ├── admin/
+│   │   ├── bookings/
+│   │   ├── categories/
+│   │   ├── dashboard/
+│   │   ├── reviews/
+│   │   ├── salons/
+│   │   └── users/
 │   ├── auth/
 │   ├── booking/
 │   ├── errors/
 │   ├── layouts/
 │   ├── owner/
+│   │   ├── bookings/
+│   │   ├── dashboard/
+│   │   ├── revenue/
+│   │   ├── services/
+│   │   └── staff/
 │   ├── payment/
 │   ├── review/
 │   ├── search/
 │   └── user/
 ├── .htaccess
+├── composer.json
 ├── index.php
+├── setup-data.sql              [NEW] Import 4 salon + 3 owner + 9 dịch vụ (hợp nhất)
+├── reset-admin-password.php    [NEW] Reset mật khẩu admin
+├── reset-owner-password.php    [NEW] Reset mật khẩu owner
+├── DECUONG.md
 └── README.md
 ```
 
@@ -172,89 +192,220 @@ barber-spa/
 
 ---
 
-⚙️ Hướng dẫn cài đặt và chạy dự án
+## ⚙️ Hướng dẫn cài đặt và chạy dự án
 
-1. Yêu cầu môi trường
-   XAMPP
-   PHP 8.x
-   MySQL / MariaDB
-   Trình duyệt web
-   phpMyAdmin
-2. Đưa project vào thư mục htdocs
+### 1️⃣ Yêu cầu môi trường
 
-Ví dụ:
+- **XAMPP** (hoặc Apache + MySQL riêng biệt)
+- **PHP 8.0+**
+- **MySQL / MariaDB 5.7+**
+- **Trình duyệt web** (Chrome, Firefox, Edge, v.v.)
+- **phpMyAdmin** (thường có sẵn trong XAMPP)
 
-C:\aiu\htdocs\barber-spa
+### 2️⃣ Đưa project vào htdocs
 
-3.  Khởi động Apache và MySQL trong XAMPP
+1. **Nén dự án** hoặc sử dụng Git clone:
 
-Mở XAMPP Control Panel rồi start:
+```bash
+git clone <repo-url> C:\aiu\htdocs\barber-spa
+```
 
-Apache
-MySQL
+2. **Hoặc copy thủ công vào:**
 
-4. Tạo database
+```
+C:\xampp\htdocs\barber-spa
+```
 
-Vào phpMyAdmin và tạo database mới:
+### 3️⃣ Khởi động dịch vụ XAMPP
 
-barber_spa
+1. Mở **XAMPP Control Panel**
+2. Click **Start** cho:
+   - ✅ **Apache**
+   - ✅ **MySQL**
 
-Khuyến nghị collation:
+### 4️⃣ Tạo Database & Import Dữ Liệu
 
-utf8mb4_unicode_ci
+#### **Cách 1: phpMyAdmin (Dễ nhất)**
 
-5. Import database
+1. Truy cập: http://localhost/phpmyadmin
+2. Click **Databases** → tạo database mới:
+   - **Name:** `barber_spa`
+   - **Collation:** `utf8mb4_unicode_ci`
+3. Chọn database vừa tạo
+4. Tab **Import** → chọn file `database/schema.sql` → **Import**
 
-Mở phpMyAdmin:
+#### **Cách 2: MySQL CLI**
 
-Chọn database barber_spa
-Chọn tab Import
-Chọn file:
-database/schema.sql
-Bấm Import
+```bash
+mysql -u root -p < database/schema.sql
+```
 
-6. Cấu hình kết nối database
+### 5️⃣ Cấu hình Kết nối Database
 
-Mở file:
+Mở file `config/db.php` và cập nhật:
 
-config/db.php
+```php
+<?php
+define('DB_HOST', '127.0.0.1');      // Địa chỉ MySQL
+define('DB_NAME', 'barber_spa');      // Tên database
+define('DB_USER', 'root');            // User MySQL
+define('DB_PASS', '');                // Password MySQL (để trống nếu không có)
+define('DB_PORT', 3306);              // Port MySQL
+define('DB_CHARSET', 'utf8mb4');      // Charset
+```
 
-cập nhật đúng thông tin máy bạn, ví dụ:
+### 6️⃣ Khởi chạy ứng dụng
 
-define('DB_HOST', '127.0.0.1');
-define('DB_NAME', 'barber_spa');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+1. Mở trình duyệt: **http://localhost/barber-spa**
+2. Nếu thấy **404**, kiểm tra:
+   - Apache đã start?
+   - File `index.php` có tồn tại?
+   - `.htaccess` có bị chặn?
 
-7. Truy cập dự án
+### 7️⃣ (Tuỳ chọn) Import Dữ Liệu Mở Rộng
 
-Mở trình duyệt:
+Để thêm 4 salon, 3 owner mới và 9 dịch vụ, import file `setup-data.sql`:
 
-http://localhost/barber-spa
-🔐 Tài khoản test
+```bash
+# Import qua MySQL CLI
+mysql -u root -p barber_spa < setup-data.sql
+```
 
-Có thể thay đổi tùy theo dữ liệu seed hiện tại trong database/schema.sql
+**Hoặc qua phpMyAdmin:**
 
-Admin
-Email: admin@barberspa.vn
-Password: Admin@123
-Owner
-Email: owner1@gmail.com
-Password: Owner@123
-Customer
-Email: quang@gmail.com
-Password: Customer@123
+1. Chọn database `barber_spa`
+2. Tab **Import** → chọn file `setup-data.sql`
+3. Click **Import**
 
-## Nếu mật khẩu không đúng do đã thay đổi trong quá trình test, có thể reset lại bằng script tạm ở local rồi xóa script ngay sau khi dùng.
+**Dữ liệu được thêm vào:**
+
+- 3 owner mới (owner2@gmail.com, owner3@gmail.com, owner4@gmail.com)
+- 4 salon mới (Hair Studio, Beauty Palace, Barbershop, Aesthetic Clinic)
+- 9 dịch vụ mới cho các salon
+
+Tất cả mật khẩu owner: **Owner@123**
+
+### 8️⃣ (Tuỳ chọn) Reset Mật Khẩu Test
+
+Nếu quên mật khẩu test, chạy script:
+
+```bash
+# Reset admin password → Admin@123
+php reset-admin-password.php
+
+# Reset owner password → Owner@123
+php reset-owner-password.php
+```
+
+**Sau khi dùng xong, xóa 2 file này để bảo mật!**
+
+**📝 Ghi chú:**
+
+- File `add-salons.sql` và `add-services.sql` đã được thay thế bằng `setup-data.sql` (hợp nhất)
+- Bạn có thể xóa 2 file cũ nếu không cần dùng nữa
 
 ---
 
+## 🔐 Tài Khoản Test
+
+| Vai trò  | Email              | Mật khẩu     | Ghi chú                    |
+| -------- | ------------------ | ------------ | -------------------------- |
+| Admin    | admin@barberspa.vn | Admin@123    | Quản trị hệ thống          |
+| Owner    | owner1@gmail.com   | Owner@123    | Quản lý salon              |
+| Owner    | owner2@gmail.com   | Owner@123    | Salon mới (sau khi import) |
+| Owner    | owner3@gmail.com   | Owner@123    | Salon mới (sau khi import) |
+| Owner    | owner4@gmail.com   | Owner@123    | Salon mới (sau khi import) |
+| Customer | quang@gmail.com    | Customer@123 | Khách hàng test            |
+
+**⚠️ Lưu ý:** Các mật khẩu được hash bằng bcrypt. Nếu cần thay đổi, sử dụng reset script hoặc cập nhật trực tiếp qua phpmyadmin.
+
+---
+
+## ✨ Chức Năng Chính Của Hệ Thống
+
+### 👥 Khách hàng (User / Customer)
+
+- ✅ Đăng ký, đăng nhập, đăng xuất
+- ✅ Quên mật khẩu / đặt lại mật khẩu
+- ✅ Tìm kiếm salon theo từ khóa, khu vực, danh mục
+- ✅ Xem chi tiết salon, dịch vụ, nhân viên
+- ✅ Đặt lịch hẹn (multi-step wizard)
+- ✅ Xem & quản lý lịch hẹn
+- ✅ Hủy lịch (khi còn hiệu lực)
+- ✅ Thanh toán online (MoMo, VNPay) hoặc tại quầy
+- ✅ Viết đánh giá & review
+
+### 💼 Chủ salon (Owner)
+
+- ✅ Dashboard tổng quan (KPI, doanh thu, booking)
+- ✅ Quản lý booking/lịch hẹn
+- ✅ Quản lý dịch vụ
+- ✅ Quản lý nhân viên
+- ✅ Quản lý lịch làm việc
+- ✅ Xem doanh thu & báo cáo
+- ✅ Cập nhật thông tin salon
+
+### 👨‍💼 Quản trị viên (Admin)
+
+- ✅ Dashboard hệ thống (KPI toàn bộ)
+- ✅ Quản lý users
+- ✅ Quản lý salons (duyệt, từ chối, xóa)
+- ✅ Quản lý danh mục dịch vụ
+- ✅ Quản lý bookings (xác nhận, hoàn thành, hủy)
+- ✅ Quản lý reviews & ratings
+- ✅ Thống kê & báo cáo hệ thống
+
+---
+
+## 🛠️ Cấu Hình Thanh Toán
+
+### MoMo Payment
+
+Cập nhật `config/momo.php`:
+
+```php
+[
+    'partner_code' => 'YOUR_PARTNER_CODE',
+    'access_key'   => 'YOUR_ACCESS_KEY',
+    'secret_key'   => 'YOUR_SECRET_KEY',
+    'endpoint'     => 'https://test-payment.momo.vn/v2/gateway/api/create',
+    'redirect_url' => 'https://yourdomain.com/barber-spa/payment/momo-return',
+    'ipn_url'      => 'https://yourdomain.com/barber-spa/payment/momo-ipn',
+]
+```
+
+### VNPay Payment
+
+Cập nhật `config/vnpay.php`:
+
+```php
+[
+    'version'      => '2.1.0',
+    'tmn_code'     => 'YOUR_TMN_CODE',
+    'hash_secret'  => 'YOUR_HASH_SECRET',
+    'pay_url'      => 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html',
+    'return_url'   => 'https://yourdomain.com/barber-spa/payment/vnpay-return',
+    'ipn_url'      => 'https://yourdomain.com/barber-spa/payment/vnpay-ipn',
+]
+```
+
+**Lấy credentials từ:**
+
+- **MoMo:** https://business.momo.vn
+- **VNPay:** https://merchant.vnpayment.vn
+
+---
+
+## 📞 Hỗ Trợ & Liên Hệ
+
+Nếu gặp vấn đề:
+
 📸 Ảnh chụp màn hình đề xuất khi nộp/demo
 User
-![alt text]({13E64A85-6373-446A-B757-84BDF7BFC78D}.png)
-![alt text]({360DF440-2015-4C33-BBED-1DF86504D63B}.png)
+![alt text]({93BA7E9A-D89E-4CBE-8617-0F3A54C463F7}.png)
+![alt text]({AC14CC96-ED8E-4AF5-8883-A24366378C1F}.png)
 Admin
-![alt text]({47506CE3-6835-43DA-8EC1-BF47D6089594}.png)
+![alt text]({BEACBA17-DE19-4EEB-B504-49380366A867}.png)
 
 ---
 

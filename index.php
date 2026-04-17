@@ -33,13 +33,21 @@ $routes = [
     'cancel-booking'         => 'controllers/BookingController.php@cancel',
     'reschedule'             => 'controllers/BookingController.php@reschedule',
 
-    'payment/confirm'        => 'controllers/PaymentController.php@confirm',
-    'payment'                => 'controllers/PaymentController.php@index',
+    'payment' => 'controllers/PaymentController.php@index',
+
+   'payment/vnpay'        => 'controllers/PaymentController.php@vnpay',
+   'payment/vnpay-return' => 'controllers/PaymentController.php@vnpayReturn',
+   'payment/vnpay-ipn'    => 'controllers/PaymentController.php@vnpayIpn',
+
+   'payment/momo'        => 'controllers/PaymentController.php@momo',
+'payment/momo-return' => 'controllers/PaymentController.php@momoReturn',
+'payment/momo-ipn'    => 'controllers/PaymentController.php@momoIpn',
 
     'write-review'           => 'controllers/ReviewController.php@create',
     'edit-review/(\d+)'      => 'controllers/ReviewController.php@edit',
 
-    'my-profile'             => 'controllers/UserController.php@profile',
+        'my-profile'             => 'controllers/UserController.php@profile',
+    'edit-profile'           => 'controllers/UserController.php@editProfile',
 
     'owner/salon/create'     => 'controllers/owner/SalonController.php@create',
     'owner/staff/schedule'   => 'controllers/owner/StaffController.php@schedule',

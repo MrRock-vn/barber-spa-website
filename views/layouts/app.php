@@ -7,6 +7,11 @@ $content = $content ?? '';
 $bodyClass = $bodyClass ?? 'bg-light';
 $showNavbar = $showNavbar ?? true;
 $navSection = $navSection ?? 'public';
+$bodyClass = trim($bodyClass . match ($navSection) {
+    'admin' => ' admin-layout',
+    'owner' => ' owner-layout',
+    default => '',
+});
 
 function renderNavLinks(string $navSection): void
 {
@@ -48,6 +53,68 @@ function renderNavLinks(string $navSection): void
     }
 }
 
+function getCurrentPath(): string
+{
+    return (string) (parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?? '');
+}
+
+function isActiveAdminLink(string $linkPath, string $currentPath): bool
+{
+    return str_contains($currentPath, $linkPath);
+}
+
+function isActiveOwnerLink(string $linkPath, string $currentPath): bool
+{
+    return str_contains($currentPath, $linkPath);
+}
+
+function renderAdminSidebar(string $currentPath): void
+{
+    $items = [
+        '/admin/dashboard' => 'Dashboard',
+        '/admin/users' => 'Users',
+        '/admin/salons' => 'Salons',
+        '/admin/categories' => 'Categories',
+        '/admin/bookings' => 'Bookings',
+        '/admin/reviews' => 'Reviews',
+    ];
+
+    echo '<div class="admin-sidebar">';
+    echo '<div class="sidebar-title">Admin menu</div>';
+    echo '<nav class="nav flex-column gap-2">';
+
+    foreach ($items as $path => $label) {
+        $active = isActiveAdminLink($path, $currentPath) ? ' active' : '';
+        echo '<a class="nav-link btn btn-outline-light btn-sm text-start w-100' . $active . '" href="' . e(BASE_URL . $path) . '">' . e($label) . '</a>';
+    }
+
+    echo '</nav>';
+    echo '</div>';
+}
+
+function renderOwnerSidebar(string $currentPath): void
+{
+    $items = [
+        '/owner/dashboard' => 'Dashboard',
+        '/owner/bookings' => 'Bookings',
+        '/owner/revenue' => 'Revenue',
+        '/owner/services' => 'Services',
+        '/owner/staff' => 'Staff',
+    ];
+
+    echo '<div class="admin-sidebar">';
+    echo '<div class="sidebar-title">Owner menu</div>';
+    echo '<nav class="nav flex-column gap-2">';
+
+    foreach ($items as $path => $label) {
+        $active = isActiveOwnerLink($path, $currentPath) ? ' active' : '';
+        echo '<a class="nav-link btn btn-outline-light btn-sm text-start w-100' . $active . '" href="' . e(BASE_URL . $path) . '">' . e($label) . '</a>';
+    }
+
+    echo '</nav>';
+    echo '</div>';
+}
+
 function renderBrandBySection(string $navSection): string
 {
     return match ($navSection) {
@@ -69,29 +136,60 @@ function renderBrandBySection(string $navSection): string
 <body class="<?= e($bodyClass) ?> d-flex flex-column min-vh-100">
 
 <?php if ($showNavbar): ?>
-<nav class="navbar navbar-expand-lg navbar-dark app-navbar">
+<nav class="navbar navbar-expand-lg navbar-dark app-navbar <?= $navSection === 'admin' ? 'app-navbar-admin' : '' ?>">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="<?= e(BASE_URL . '/home') ?>">
+        <a class="navbar-brand fw-bold" href="<?= e($navSection === 'admin' ? BASE_URL . '/admin/dashboard' : BASE_URL . '/home') ?>">
             <?= e(renderBrandBySection($navSection)) ?>
         </a>
 
-        <div class="ms-auto d-flex gap-2 flex-wrap">
-            <?php renderNavLinks($navSection); ?>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-            <?php if (Auth::check()): ?>
-                <a class="btn btn-danger btn-sm" href="<?= e(BASE_URL . '/logout') ?>">Đăng xuất</a>
-            <?php endif; ?>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <div class="navbar-nav ms-auto align-items-center gap-2">
+                <?php if ($navSection !== 'admin'): ?>
+                    <?php renderNavLinks($navSection); ?>
+                <?php endif; ?>
+
+                <?php if (Auth::check()): ?>
+                    <a class="btn btn-danger btn-sm" href="<?= e(BASE_URL . '/logout') ?>">Đăng xuất</a>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 </nav>
 <?php endif; ?>
 
 <main class="flex-grow-1 py-4">
-    <div class="container">
-        <?php require __DIR__ . '/flash.php'; ?>
-    </div>
+    <?php if ($navSection === 'admin' || $navSection === 'owner'): ?>
+        <div class="container-fluid admin-container-fluid">
+            <div class="row gx-4">
+                <aside class="col-12 col-lg-3 col-xl-2 mb-4 mb-lg-0">
+                    <?php if ($navSection === 'admin'): ?>
+                        <?php renderAdminSidebar(getCurrentPath()); ?>
+                    <?php else: ?>
+                        <?php renderOwnerSidebar(getCurrentPath()); ?>
+                    <?php endif; ?>
+                </aside>
 
-    <?= $content ?>
+                <section class="col-12 col-lg-9 col-xl-10 admin-content">
+                    <div class="container-fluid p-0">
+                        <?php require __DIR__ . '/flash.php'; ?>
+                        <?= $content ?>
+                    </div>
+                </section>
+            </div>
+        </div>
+    <?php else: ?>
+        <div class="container">
+            <?php require __DIR__ . '/flash.php'; ?>
+        </div>
+
+        <div class="container">
+            <?= $content ?>
+        </div>
+    <?php endif; ?>
 </main>
 
 <footer class="app-footer mt-auto">
@@ -99,6 +197,6 @@ function renderBrandBySection(string $navSection): string
         © <?= e((string) date('Y')) ?> <?= e(APP_NAME) ?>. MVC PHP thuần + MySQL + Bootstrap 5
     </div>
 </footer>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

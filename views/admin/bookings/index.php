@@ -23,13 +23,18 @@ function adminBookingPaymentBadgeClass(string $status): string
 }
 ?>
 
-<div class="container">
-    <div class="mb-4">
-        <h2 class="page-section-title">Quản lý bookings</h2>
-        <div class="page-section-subtitle">Xem và quản lý toàn bộ booking hệ thống</div>
+<div class="admin-page admin-bookings-page">
+    <div class="admin-page-header d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h2 class="page-section-title">Quản lý bookings</h2>
+            <div class="page-section-subtitle">Xem và quản lý toàn bộ booking hệ thống</div>
+        </div>
+        <div class="text-muted small text-end">
+            Hiện có <strong><?= e((string) count($bookings)) ?></strong> booking.
+        </div>
     </div>
 
-    <div class="card mb-4">
+    <div class="card admin-card-surface mb-4 admin-filter-card">
         <div class="card-body">
             <form method="GET" action="<?= e(BASE_URL . '/admin/bookings') ?>">
                 <div class="row g-3 align-items-end">
@@ -89,13 +94,13 @@ function adminBookingPaymentBadgeClass(string $status): string
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-body">
+    <div class="card admin-card-surface admin-table-card">
+        <div class="card-body p-0">
             <?php if (empty($bookings)): ?>
                 <div class="alert alert-info mb-0">Không có booking nào phù hợp.</div>
             <?php else: ?>
                 <div class="table-responsive">
-                    <table class="table align-middle">
+                    <table class="table admin-table align-middle mb-0">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -134,7 +139,7 @@ function adminBookingPaymentBadgeClass(string $status): string
                                         </span>
                                     </td>
                                     <td>
-                                        <div class="d-flex gap-2 flex-wrap">
+                                        <div class="admin-table-actions d-flex gap-2 flex-wrap">
                                             <?php if ($booking['status'] === 'pending'): ?>
                                                 <form method="POST" action="<?= e(BASE_URL . '/admin/bookings') ?>">
                                                     <?= csrfInput() ?>

@@ -34,11 +34,12 @@ class CategoryController
         $editId = (int) ($_GET['edit_id'] ?? 0);
         $editingCategory = $editId > 0 ? $this->categoryModel->findById($editId) : null;
 
-        render('admin/users/index', [
-    'pageTitle' => 'Admin Users - ' . APP_NAME,
-    'navSection' => 'admin',
-    'users' => $users,
-]);
+        render('admin/categories/index', [
+            'pageTitle' => 'Admin Categories - ' . APP_NAME,
+            'navSection' => 'admin',
+            'categories' => $categories,
+            'editingCategory' => $editingCategory,
+        ]);
     }
 
     private function handlePostAction(): void

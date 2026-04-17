@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../core/Mailer.php';
 
 class AuthController
 {
@@ -193,41 +194,66 @@ class AuthController
         redirect(BASE_URL . '/login');
     }
 
-    public function forgotPassword(): void
-    {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!verifyCsrf()) {
-                flash('error', 'Phiên làm việc không hợp lệ. Vui lòng thử lại.');
-                redirect(BASE_URL . '/forgot-password');
-            }
-
-            $email = trim($_POST['email'] ?? '');
-            $_SESSION['old']['email'] = $email;
-
-            if (!isValidEmail($email)) {
-                flash('error', 'Email không đúng định dạng.');
-                redirect(BASE_URL . '/forgot-password');
-            }
-
-            $user = $this->userModel->findByEmail($email);
-
-            if ($user) {
-                $resetToken = bin2hex(random_bytes(32));
-                $expiresAt = date('Y-m-d H:i:s', strtotime('+15 minutes'));
-
-                $this->userModel->saveResetToken((int) $user['id'], $resetToken, $expiresAt);
-            }
-
-            unset($_SESSION['old']);
-            flash('success', 'Nếu email tồn tại trong hệ thống, liên kết đặt lại mật khẩu đã được tạo.');
+   public function forgotPassword(): void
+{
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (!verifyCsrf()) {
+            flash('error', 'Phiên làm việc không hợp lệ. Vui lòng thử lại.');
             redirect(BASE_URL . '/forgot-password');
         }
 
-        render('auth/forgot-password', [
-    'pageTitle' => 'Quên mật khẩu - ' . APP_NAME,
-    'navSection' => 'public',
-]);
+        $email = trim($_POST['email'] ?? '');
+        $_SESSION['old']['email'] = $email;
+
+        if (!isValidEmail($email)) {
+            flash('error', 'Email không đúng định dạng.');
+            redirect(BASE_URL . '/forgot-password');
+        }
+
+        $user = $this->userModel->findByEmail($email);
+
+        if ($user) {
+            $resetToken = bin2hex(random_bytes(32));
+            $expiresAt = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+
+            $this->userModel->saveResetToken((int) $user['id'], $resetToken, $expiresAt);
+
+            $resetLink = BASE_URL . '/reset-password?token=' . urlencode($resetToken);
+
+            $emailBody = '
+                <h2>Đặt lại mật khẩu</h2>
+                <p>Xin chào ' . e($user['name'] ?? 'bạn') . ',</p>
+                <p>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản Barber Spa.</p>
+                <p>Nhấn vào liên kết bên dưới để đặt lại mật khẩu:</p>
+                <p><a href="' . e($resetLink) . '">' . e($resetLink) . '</a></p>
+                <p>Liên kết này sẽ hết hạn sau 15 phút.</p>
+            ';
+
+            $sent = Mailer::send(
+                (string) $user['email'],
+                (string) ($user['name'] ?? 'Khách hàng'),
+                'Đặt lại mật khẩu - Barber Spa',
+                $emailBody
+            );
+
+            if ($sent) {
+                flash('success', 'Nếu email tồn tại trong hệ thống, liên kết đặt lại mật khẩu đã được gửi.');
+            } else {
+                flash('error', 'Không gửi được email đặt lại mật khẩu. Vui lòng thử lại sau.');
+            }
+        } else {
+            flash('success', 'Nếu email tồn tại trong hệ thống, liên kết đặt lại mật khẩu đã được gửi.');
+        }
+
+        unset($_SESSION['old']);
+        redirect(BASE_URL . '/forgot-password');
     }
+
+    render('auth/forgot-password', [
+        'pageTitle' => 'Quên mật khẩu - ' . APP_NAME,
+        'navSection' => 'public',
+    ]);
+}
 
     public function resetPassword(): void
     {

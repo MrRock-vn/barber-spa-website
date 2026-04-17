@@ -15,13 +15,18 @@ function adminSalonStatusBadgeClass(string $status): string
 }
 ?>
 
-<div class="container">
-    <div class="mb-4">
-        <h2 class="page-section-title">Quản lý salons</h2>
-        <div class="page-section-subtitle">Duyệt, từ chối, ẩn và xóa mềm salon</div>
+<div class="admin-page admin-salons-page">
+    <div class="admin-page-header d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h2 class="page-section-title">Quản lý salons</h2>
+            <div class="page-section-subtitle">Duyệt, từ chối, ẩn và xóa mềm salon</div>
+        </div>
+        <div class="text-muted small text-end">
+            Hiện có <strong><?= e((string) count($salons)) ?></strong> salon.
+        </div>
     </div>
 
-    <div class="card mb-4">
+    <div class="card admin-card-surface mb-4 admin-filter-card">
         <div class="card-body">
             <form method="GET" action="<?= e(BASE_URL . '/admin/salons') ?>">
                 <div class="row g-3 align-items-end">
@@ -68,13 +73,13 @@ function adminSalonStatusBadgeClass(string $status): string
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-body">
+    <div class="card admin-card-surface admin-table-card">
+        <div class="card-body p-0">
             <?php if (empty($salons)): ?>
                 <div class="alert alert-info mb-0">Không có salon nào phù hợp.</div>
             <?php else: ?>
                 <div class="table-responsive">
-                    <table class="table align-middle">
+                    <table class="table admin-table align-middle mb-0">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -110,9 +115,9 @@ function adminSalonStatusBadgeClass(string $status): string
                                     </td>
                                     <td><?= e((string) ($salon['reject_reason'] ?? '')) ?: '-' ?></td>
                                     <td>
-                                        <div class="d-flex flex-column gap-2">
+                                        <div class="admin-table-actions d-flex flex-column gap-2">
                                             <?php if ($salon['status'] === 'pending'): ?>
-                                                <div class="d-flex gap-2 flex-wrap">
+                                                <div class="admin-table-actions d-flex gap-2 flex-wrap">
                                                     <form method="POST" action="<?= e(BASE_URL . '/admin/salons') ?>">
                                                         <?= csrfInput() ?>
                                                         <input type="hidden" name="salon_id" value="<?= e((string) $salon['id']) ?>">
@@ -135,7 +140,7 @@ function adminSalonStatusBadgeClass(string $status): string
                                                     <button type="submit" class="btn btn-sm btn-danger">Từ chối</button>
                                                 </form>
                                             <?php elseif ($salon['status'] === 'active'): ?>
-                                                <div class="d-flex gap-2 flex-wrap">
+                                                <div class="admin-table-actions d-flex gap-2 flex-wrap">
                                                     <form method="POST" action="<?= e(BASE_URL . '/admin/salons') ?>">
                                                         <?= csrfInput() ?>
                                                         <input type="hidden" name="salon_id" value="<?= e((string) $salon['id']) ?>">
@@ -151,7 +156,7 @@ function adminSalonStatusBadgeClass(string $status): string
                                                     </form>
                                                 </div>
                                             <?php elseif (in_array($salon['status'], ['hidden', 'rejected'], true)): ?>
-                                                <div class="d-flex gap-2 flex-wrap">
+                                                <div class="admin-table-actions d-flex gap-2 flex-wrap">
                                                     <form method="POST" action="<?= e(BASE_URL . '/admin/salons') ?>">
                                                         <?= csrfInput() ?>
                                                         <input type="hidden" name="salon_id" value="<?= e((string) $salon['id']) ?>">

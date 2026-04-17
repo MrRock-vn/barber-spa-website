@@ -635,6 +635,37 @@ class Booking
         return (int) ($row['total'] ?? 0);
     }
 
+    public function countBookingsByStatus(string $status): int
+    {
+        $sql = "SELECT COUNT(*) AS total
+                FROM bookings
+                WHERE status = :status";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['status' => $status]);
+        $row = $stmt->fetch();
+
+        return (int) ($row['total'] ?? 0);
+    }
+
+    public function getRevenueByLastDays(int $days = 7): array
+    {
+        $fromDate = date('Y-m-d', strtotime(sprintf('-%d days', $days - 1)));
+
+        $sql = "SELECT booking_date,
+                       SUM(total_price) AS revenue
+                FROM bookings
+                WHERE status = 'completed'
+                  AND booking_date >= :from_date
+                GROUP BY booking_date
+                ORDER BY booking_date ASC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['from_date' => $fromDate]);
+
+        return $stmt->fetchAll();
+    }
+
     public function sumAllRevenue(): float
     {
         $sql = "SELECT SUM(total_price) AS total

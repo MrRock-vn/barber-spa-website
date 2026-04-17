@@ -7,6 +7,15 @@ class Auth
     public static function start(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
+            session_set_cookie_params([
+                'lifetime' => 0,
+                'path' => '/',
+                'domain' => '',
+                'secure' => false,
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
+
             session_start();
         }
     }
@@ -23,7 +32,7 @@ class Auth
 
     public static function id(): ?int
     {
-        return $_SESSION['user']['id'] ?? null;
+        return isset($_SESSION['user']['id']) ? (int) $_SESSION['user']['id'] : null;
     }
 
     public static function role(): ?string
@@ -33,6 +42,8 @@ class Auth
 
     public static function login(array $user): void
     {
+        session_regenerate_id(true);
+
         $_SESSION['user'] = [
             'id' => (int) $user['id'],
             'name' => $user['name'],
@@ -44,12 +55,18 @@ class Auth
     public static function logout(): void
     {
         unset($_SESSION['user']);
+
+        if (isset($_SESSION['_flash'])) {
+            unset($_SESSION['_flash']);
+        }
+
         session_regenerate_id(true);
     }
 
     public static function requireLogin(): void
     {
         if (!self::check()) {
+            flash('error', 'Vui lòng đăng nhập để tiếp tục.');
             redirect(BASE_URL . '/login');
         }
     }

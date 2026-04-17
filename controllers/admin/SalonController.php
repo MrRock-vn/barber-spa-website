@@ -34,11 +34,11 @@ class SalonController
 
         $salons = $this->salonModel->getAllForAdmin($filters);
 
-        render('admin/users/index', [
-    'pageTitle' => 'Admin Users - ' . APP_NAME,
-    'navSection' => 'admin',
-    'users' => $users,
-]);
+        render('admin/salons/index', [
+            'pageTitle' => 'Admin Salons - ' . APP_NAME,
+            'navSection' => 'admin',
+            'salons' => $salons,
+        ]);
     }
 
     private function handlePostAction(): void

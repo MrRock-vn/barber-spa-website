@@ -23,50 +23,61 @@ function paymentStatusBadgeClass(string $status): string
 }
 ?>
 
-<div class="container">
+<div class="container py-5">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
         <div>
             <h2 class="page-section-title">Lịch hẹn của tôi</h2>
-            <div class="page-section-subtitle">Theo dõi các booking đã tạo</div>
+            <div class="page-section-subtitle">Quản lý booking đã tạo và xem trạng thái nhanh chóng.</div>
         </div>
         <a href="<?= e(BASE_URL . '/home') ?>" class="btn btn-outline-dark">Về trang chủ</a>
     </div>
 
-    <div class="row g-3">
+    <div class="row g-4">
         <?php foreach ($bookings as $booking): ?>
             <div class="col-md-6">
-                <div class="card h-100">
+                <div class="card booking-card h-100">
                     <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                            <h5 class="fw-bold mb-0"><?= e($booking['salon_name']) ?></h5>
-                            <span class="badge <?= bookingStatusBadgeClass((string) $booking['status']) ?>">
-                                <?= e($booking['status']) ?>
+                        <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+                            <div>
+                                <h5 class="fw-bold mb-1"><?= e($booking['salon_name']) ?></h5>
+                                <div class="text-muted">Nhân viên: <?= e($booking['staff_name']) ?></div>
+                            </div>
+                            <span class="booking-status <?= bookingStatusBadgeClass((string) $booking['status']) ?>">
+                                <?= e(ucfirst($booking['status'])) ?>
                             </span>
                         </div>
 
-                        <p class="mb-1">Nhân viên: <?= e($booking['staff_name']) ?></p>
-                        <p class="mb-1">Ngày: <?= e(formatDate($booking['booking_date'])) ?></p>
-                        <p class="mb-1">Giờ: <?= e(formatTime($booking['start_time']) . ' - ' . formatTime($booking['end_time'])) ?></p>
-                        <p class="mb-3">
-                            Thanh toán:
-                            <span class="badge <?= paymentStatusBadgeClass((string) $booking['payment_status']) ?>">
-                                <?= e($booking['payment_status']) ?>
-                            </span>
-                        </p>
+                        <div class="row gx-3 gy-2 mb-3">
+                            <div class="col-6">
+                                <div class="text-muted small">Ngày</div>
+                                <div class="fw-semibold"><?= e(formatDate($booking['booking_date'])) ?></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">Giờ</div>
+                                <div class="fw-semibold"><?= e(formatTime($booking['start_time']) . ' - ' . formatTime($booking['end_time'])) ?></div>
+                            </div>
+                        </div>
 
-                        <div class="d-flex gap-2 flex-wrap">
+                        <div class="d-flex gap-2 flex-wrap align-items-center mb-3">
+                            <span class="payment-status <?= paymentStatusBadgeClass((string) $booking['payment_status']) ?>">
+                                <?= e(ucfirst($booking['payment_status'])) ?>
+                            </span>
+                        </div>
+
+                        <div class="booking-actions">
                             <a href="<?= e(BASE_URL . '/booking/' . $booking['id']) ?>" class="btn btn-sm btn-dark">Xem chi tiết</a>
 
                             <?php if (in_array($booking['status'], ['pending', 'confirmed'], true)): ?>
-                                <form method="POST" action="<?= e(BASE_URL . '/cancel-booking') ?>">
+                                <form method="POST" action="<?= e(BASE_URL . '/cancel-booking') ?>" class="m-0">
                                     <?= csrfInput() ?>
                                     <input type="hidden" name="booking_id" value="<?= e((string) $booking['id']) ?>">
-                                    <button type="submit" class="btn btn-sm btn-danger">Hủy</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Hủy</button>
                                 </form>
                             <?php endif; ?>
 
                             <?php if (($booking['payment_method'] ?? '') === 'online' && ($booking['payment_status'] ?? '') === 'unpaid'): ?>
-                                <a href="<?= e(BASE_URL . '/payment?booking_id=' . $booking['id']) ?>" class="btn btn-sm btn-success">Thanh toán</a>
+                                <a href="<?= e(BASE_URL . '/payment/momo?booking_id=' . $booking['id']) ?>" class="btn btn-sm btn-danger">Thanh toán MoMo</a>
+                                <a href="<?= e(BASE_URL . '/payment/vnpay?booking_id=' . $booking['id']) ?>" class="btn btn-sm btn-primary">Thanh toán VNPay</a>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -76,7 +87,7 @@ function paymentStatusBadgeClass(string $status): string
 
         <?php if (empty($bookings)): ?>
             <div class="col-12">
-                <div class="alert alert-info">Bạn chưa có lịch hẹn nào.</div>
+                <div class="booking-empty">Bạn chưa có lịch hẹn nào. Hãy tạo một lịch hẹn mới để thưởng thức dịch vụ Barber Spa.</div>
             </div>
         <?php endif; ?>
     </div>

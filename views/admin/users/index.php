@@ -8,13 +8,18 @@ function adminUserStatusBadgeClass($isActive): string
 }
 ?>
 
-<div class="container">
-    <div class="mb-4">
-        <h2 class="page-section-title">Quản lý users</h2>
-        <div class="page-section-subtitle">Xem, lọc và khóa/mở khóa user</div>
+<div class="admin-page admin-users-page">
+    <div class="admin-page-header d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h2 class="page-section-title">Quản lý users</h2>
+            <div class="page-section-subtitle">Quản lý người dùng, trạng thái và quyền truy cập.</div>
+        </div>
+        <div class="text-muted small text-end">
+            Hiện có <strong><?= e((string) count($users)) ?></strong> user trong danh sách.
+        </div>
     </div>
 
-    <div class="card mb-4">
+    <div class="card admin-card-surface mb-4 admin-filter-card">
         <div class="card-body">
             <form method="GET" action="<?= e(BASE_URL . '/admin/users') ?>">
                 <div class="row g-3 align-items-end">
@@ -48,22 +53,22 @@ function adminUserStatusBadgeClass($isActive): string
                         </select>
                     </div>
 
-                    <div class="col-md-2 d-flex gap-2">
-                        <button type="submit" class="btn btn-dark">Lọc</button>
-                        <a href="<?= e(BASE_URL . '/admin/users') ?>" class="btn btn-outline-secondary">Reset</a>
+                    <div class="col-md-2 d-flex gap-2 flex-column flex-sm-row">
+                        <button type="submit" class="btn btn-primary btn-lg w-100">Lọc</button>
+                        <a href="<?= e(BASE_URL . '/admin/users') ?>" class="btn btn-outline-secondary btn-lg w-100">Reset</a>
                     </div>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-body">
+    <div class="card admin-card-surface admin-table-card">
+        <div class="card-body p-0">
             <?php if (empty($users)): ?>
                 <div class="alert alert-info mb-0">Không có user nào phù hợp.</div>
             <?php else: ?>
                 <div class="table-responsive">
-                    <table class="table align-middle">
+                    <table class="table admin-table align-middle mb-0">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -95,7 +100,7 @@ function adminUserStatusBadgeClass($isActive): string
                                     <td><?= e((string) ($user['locked_until'] ?? '')) ?: '-' ?></td>
                                     <td><?= e((string) ($user['ban_reason'] ?? '')) ?: '-' ?></td>
                                     <td>
-                                        <div class="d-flex flex-column gap-2">
+                                        <div class="admin-table-actions d-flex flex-column gap-2">
                                             <?php if ((int) $user['id'] === (int) Auth::id()): ?>
                                                 <span class="text-muted small">Tài khoản hiện tại</span>
                                             <?php elseif ((int) $user['is_active'] === 1): ?>

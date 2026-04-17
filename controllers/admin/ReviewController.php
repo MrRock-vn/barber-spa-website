@@ -40,11 +40,12 @@ class ReviewController
         $reviews = $this->getReviewsForAdmin($filters);
         $salons = $this->salonModel->getAllForAdmin([]);
 
-        render('admin/users/index', [
-    'pageTitle' => 'Admin Users - ' . APP_NAME,
-    'navSection' => 'admin',
-    'users' => $users,
-]);
+        render('admin/reviews/index', [
+            'pageTitle' => 'Admin Reviews - ' . APP_NAME,
+            'navSection' => 'admin',
+            'reviews' => $reviews,
+            'salons' => $salons,
+        ]);
     }
 
     private function handlePostAction(): void

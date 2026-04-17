@@ -8,15 +8,20 @@ function adminCategoryStatusBadgeClass($isActive): string
 }
 ?>
 
-<div class="container">
-    <div class="mb-4">
-        <h2 class="page-section-title">Quản lý categories</h2>
-        <div class="page-section-subtitle">Thêm, sửa, bật/tắt và xóa danh mục</div>
+<div class="admin-page admin-categories-page">
+    <div class="admin-page-header d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h2 class="page-section-title">Quản lý categories</h2>
+            <div class="page-section-subtitle">Thêm, sửa, bật/tắt và xóa danh mục</div>
+        </div>
+        <div class="text-muted small text-end">
+            Hiện có <strong><?= e((string) count($categories)) ?></strong> category.
+        </div>
     </div>
 
     <div class="row g-4">
         <div class="col-lg-4">
-            <div class="card">
+            <div class="card admin-card-surface mb-4">
                 <div class="card-body">
                     <h5 class="fw-bold mb-3">
                         <?= $editingCategory ? 'Sửa danh mục' : 'Thêm danh mục mới' ?>
@@ -101,7 +106,7 @@ function adminCategoryStatusBadgeClass($isActive): string
         </div>
 
         <div class="col-lg-8">
-            <div class="card mb-4">
+            <div class="card admin-card-surface mb-4 admin-filter-card">
                 <div class="card-body">
                     <form method="GET" action="<?= e(BASE_URL . '/admin/categories') ?>">
                         <div class="row g-3 align-items-end">
@@ -134,13 +139,13 @@ function adminCategoryStatusBadgeClass($isActive): string
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card admin-card-surface admin-table-card">
                 <div class="card-body">
                     <?php if (empty($categories)): ?>
                         <div class="alert alert-info mb-0">Không có category nào phù hợp.</div>
                     <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table align-middle">
+                            <table class="table admin-table align-middle mb-0">
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -166,7 +171,7 @@ function adminCategoryStatusBadgeClass($isActive): string
                                                 </span>
                                             </td>
                                             <td>
-                                                <div class="d-flex gap-2 flex-wrap">
+                                                <div class="admin-table-actions d-flex gap-2 flex-wrap">
                                                     <a
                                                         href="<?= e(BASE_URL . '/admin/categories?edit_id=' . $category['id']) ?>"
                                                         class="btn btn-sm btn-primary"

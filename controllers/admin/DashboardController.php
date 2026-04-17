@@ -36,25 +36,35 @@ class DashboardController
 
         $totalBookings = $this->bookingModel->countAllBookings();
         $todayBookings = $this->bookingModel->countTodayBookings();
+        $completedBookings = $this->bookingModel->countBookingsByStatus('completed');
+        $cancelledBookings = $this->bookingModel->countBookingsByStatus('cancelled');
+        $pendingBookings = $this->bookingModel->countBookingsByStatus('pending');
+        $confirmedBookings = $this->bookingModel->countBookingsByStatus('confirmed');
         $totalRevenue = $this->bookingModel->sumAllRevenue();
         $recentBookings = $this->bookingModel->getRecentForAdmin(5);
 
+        $activeSalons = $this->salonModel->countSalonsByStatus('active');
         $totalCategories = $this->categoryModel->countAll();
 
         render('admin/dashboard/index', [
-    'pageTitle' => 'Admin Dashboard - ' . APP_NAME,
-    'navSection' => 'admin',
-    'totalUsers' => $totalUsers,
-    'inactiveUsers' => $inactiveUsers,
-    'recentUsers' => $recentUsers,
-    'totalSalons' => $totalSalons,
-    'pendingSalons' => $pendingSalons,
-    'recentSalons' => $recentSalons,
-    'totalBookings' => $totalBookings,
-    'todayBookings' => $todayBookings,
-    'totalRevenue' => $totalRevenue,
-    'recentBookings' => $recentBookings,
-    'totalCategories' => $totalCategories,
-]);
+            'pageTitle' => 'Admin Dashboard - ' . APP_NAME,
+            'navSection' => 'admin',
+            'totalUsers' => $totalUsers,
+            'inactiveUsers' => $inactiveUsers,
+            'recentUsers' => $recentUsers,
+            'totalSalons' => $totalSalons,
+            'activeSalons' => $activeSalons,
+            'pendingSalons' => $pendingSalons,
+            'recentSalons' => $recentSalons,
+            'totalBookings' => $totalBookings,
+            'todayBookings' => $todayBookings,
+            'completedBookings' => $completedBookings,
+            'cancelledBookings' => $cancelledBookings,
+            'pendingBookings' => $pendingBookings,
+            'confirmedBookings' => $confirmedBookings,
+            'totalRevenue' => $totalRevenue,
+            'recentBookings' => $recentBookings,
+            'totalCategories' => $totalCategories,
+        ]);
     }
 }
