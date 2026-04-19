@@ -3,7 +3,7 @@
 ## Tên đề tài: Xây Dựng Website Đặt Lịch Cắt Tóc & Làm Đẹp (Barber & Spa)
 
 **Lớp:** LTWNC-D18CNPM2  
-**Nhóm:** _(Điền số nhóm)_  
+**Nhóm:** 21  
 **Thành viên:**
 
 | STT | Họ và tên        | MSSV        | Vai trò     |
