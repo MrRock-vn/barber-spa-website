@@ -657,8 +657,6 @@ Cập nhật `config/vnpay.php`:
 ```
 
 **Lấy credentials từ:**
-
-- **MoMo:** https://business.momo.vn
 - **VNPay:** https://merchant.vnpayment.vn
 
 ---
