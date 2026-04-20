@@ -1,181 +1,284 @@
 <?php
-session_start();
-require_once __DIR__ . '/../config/db.php';
-
-// Khôi phục session từ cookie Remember Me
-if (!isset($_SESSION['user']) && isset($_COOKIE['remember_token'])) {
-    $db    = getDB();
-    $token = $_COOKIE['remember_token'];
-    $stmt  = $db->prepare("
-        SELECT u.* FROM users u
-        JOIN remember_tokens r ON r.user_id = u.id
-        WHERE r.token = ? AND r.expires_at > NOW()
-    ");
-    $stmt->execute([$token]);
-    $user = $stmt->fetch();
-    if ($user) {
-        $_SESSION['user'] = [
-            'id'    => $user['id'],
-            'name'  => $user['name'],
-            'email' => $user['email'],
-            'role'  => $user['role'],
-        ];
-    }
-}
-
-// Nếu đã đăng nhập → redirect
-if (isset($_SESSION['user'])) {
-    header('Location: /index.php');
-    exit;
-}
-
-$error = '';
-$email = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email    = trim($_POST['email']    ?? '');
-    $password = trim($_POST['password'] ?? '');
-    $remember = isset($_POST['remember']);
-
-    if (empty($email) || empty($password)) {
-        $error = 'Vui lòng nhập đầy đủ email và mật khẩu.';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = 'Email không đúng định dạng.';
-    } else {
-        $db   = getDB();
-        $stmt = $db->prepare('SELECT * FROM users WHERE email = ? LIMIT 1');
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
-
-        if (!$user) {
-            $error = 'Email hoặc mật khẩu không đúng.';
-        } elseif (!$user['is_active']) {
-            $error = 'Tài khoản đã bị đình chỉ. Vui lòng liên hệ Admin.';
-        } elseif ($user['locked_until'] && new DateTime() < new DateTime($user['locked_until'])) {
-            $remaining = (new DateTime($user['locked_until']))->diff(new DateTime())->i;
-            $error = "Tài khoản bị khóa tạm thời. Thử lại sau {$remaining} phút.";
-        } elseif (!password_verify($password, $user['password'])) {
-            $attempts  = $user['login_attempts'] + 1;
-            $lockUntil = null;
-            if ($attempts >= 5) {
-                $lockUntil = date('Y-m-d H:i:s', strtotime('+15 minutes'));
-                $attempts  = 0;
-            }
-            $db->prepare('UPDATE users SET login_attempts=?, locked_until=? WHERE id=?')
-               ->execute([$attempts, $lockUntil, $user['id']]);
-            $error = 'Email hoặc mật khẩu không đúng.';
-        } else {
-            // ✅ Đăng nhập thành công
-            $db->prepare('UPDATE users SET login_attempts=0, locked_until=NULL, last_login_at=NOW(), login_ip=? WHERE id=?')
-               ->execute([$_SERVER['REMOTE_ADDR'], $user['id']]);
-
-            $_SESSION['user'] = [
-                'id'    => $user['id'],
-                'name'  => $user['name'],
-                'email' => $user['email'],
-                'role'  => $user['role'],
-            ];
-
-            // Remember Me
-            if ($remember) {
-                $token   = bin2hex(random_bytes(32));
-                $expires = date('Y-m-d H:i:s', strtotime('+30 days'));
-                $db->prepare("INSERT INTO remember_tokens (user_id, token, expires_at) VALUES (?, ?, ?)")
-                   ->execute([$user['id'], $token, $expires]);
-                setcookie('remember_token', $token, time() + 30*24*3600, '/', '', false, true);
-            }
-
-            // Redirect theo role
-            $redirect = $_GET['redirect'] ?? null;
-            if ($redirect) {
-                header('Location: ' . $redirect);
-            } elseif ($user['role'] === 'admin') {
-                header('Location: /admin/dashboard.php');
-            } elseif ($user['role'] === 'owner') {
-                header('Location: /owner/dashboard.php');
-            } else {
-                header('Location: /index.php');
-            }
-            exit;
-        }
-    }
-}
+// ============================================================================
+// docs/srs/login.php - Tài liệu SRS cho chức năng đăng nhập
+// Người làm: Nguyễn Văn Quang
+// ============================================================================
 ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập — Barber & Spa</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>SRS - Chức năng Đăng nhập</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #f8f9fa; }
-        .auth-card {
-            max-width: 420px; margin: 80px auto;
-            background: #fff; border-radius: 12px;
-            box-shadow: 0 4px 24px rgba(0,0,0,.08);
-            padding: 40px 36px;
-        }
-        .auth-logo { font-size: 1.6rem; font-weight: 700; color: #1a1a2e; }
-        .auth-logo span { color: #e94560; }
-        .btn-primary { background: #e94560; border-color: #e94560; }
-        .btn-primary:hover { background: #c73652; border-color: #c73652; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; padding: 40px 0; background: #f8f9fa; }
+        .container { max-width: 900px; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #667eea; border-bottom: 3px solid #667eea; padding-bottom: 10px; margin-bottom: 30px; }
+        h2 { color: #764ba2; margin-top: 30px; margin-bottom: 15px; }
+        h3 { color: #555; margin-top: 20px; }
+        .feature-box { background: #f8f9fa; padding: 20px; border-left: 4px solid #667eea; margin: 20px 0; }
+        .requirement { background: #e7f3ff; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; color: #d63384; }
+        table { width: 100%; margin: 20px 0; }
+        table th { background: #667eea; color: white; padding: 12px; }
+        table td { padding: 10px; border: 1px solid #ddd; }
+        .badge { padding: 5px 10px; border-radius: 3px; font-size: 12px; }
+        .badge-high { background: #dc3545; color: white; }
+        .badge-medium { background: #ffc107; color: black; }
+        .badge-low { background: #28a745; color: white; }
     </style>
 </head>
 <body>
-<div class="auth-card">
-    <div class="auth-logo text-center mb-4">✂ Barber<span>&Spa</span></div>
-    <h5 class="mb-4 text-center">Đăng nhập tài khoản</h5>
+<div class="container">
+    <h1>📋 SRS - Đặc tả Yêu cầu Phần mềm</h1>
+    <h2>Chức năng: Đăng nhập (AUTH-01)</h2>
 
-    <?php if ($error): ?>
-        <div class="alert alert-danger py-2"><?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
+    <div class="feature-box">
+        <h3>📌 Mô tả chung</h3>
+        <p>Chức năng đăng nhập cho phép người dùng xác thực danh tính và truy cập vào hệ thống Barber Spa. Hệ thống hỗ trợ 3 loại người dùng: Admin, Owner (chủ salon), và Customer (khách hàng).</p>
+    </div>
 
-    <form method="POST" id="loginForm">
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" name="email" class="form-control"
-                   value="<?= htmlspecialchars($email) ?>"
-                   placeholder="example@gmail.com" required autofocus>
-        </div>
-        <div class="mb-3">
-            <label class="form-label d-flex justify-content-between">
-                Mật khẩu
-                <a href="/forgot-password.php" class="text-decoration-none small">Quên mật khẩu?</a>
-            </label>
-            <div class="input-group">
-                <input type="password" name="password" id="passwordInput"
-                       class="form-control" placeholder="••••••••" required>
-                <button class="btn btn-outline-secondary" type="button"
-                        onclick="togglePwd()">👁</button>
-            </div>
-        </div>
-        <div class="mb-4 form-check">
-            <input class="form-check-input" type="checkbox" name="remember" id="remember">
-            <label class="form-check-label" for="remember">Ghi nhớ đăng nhập (30 ngày)</label>
-        </div>
-        <button type="submit" class="btn btn-primary w-100" id="submitBtn">
-            <span id="btnText">Đăng nhập</span>
-            <span id="btnSpinner" class="spinner-border spinner-border-sm d-none"></span>
-        </button>
-    </form>
+    <h2>🎯 Yêu cầu chức năng</h2>
 
-    <hr class="my-4">
-    <p class="text-center mb-0 small">
-        Chưa có tài khoản? <a href="/register.php">Đăng ký ngay</a>
-    </p>
+    <div class="requirement">
+        <h3>FR-01: Form đăng nhập</h3>
+        <p><strong>Mô tả:</strong> Hiển thị form đăng nhập với các trường email và mật khẩu</p>
+        <p><strong>Input:</strong></p>
+        <ul>
+            <li>Email (bắt buộc, định dạng email hợp lệ)</li>
+            <li>Mật khẩu (bắt buộc, tối thiểu 8 ký tự)</li>
+            <li>Ghi nhớ đăng nhập (tùy chọn)</li>
+        </ul>
+        <p><strong>Output:</strong> Redirect đến trang tương ứng theo role</p>
+        <p><strong>Độ ưu tiên:</strong> <span class="badge badge-high">Cao</span></p>
+    </div>
+
+    <div class="requirement">
+        <h3>FR-02: Xác thực thông tin</h3>
+        <p><strong>Mô tả:</strong> Kiểm tra email và mật khẩu có khớp với database</p>
+        <p><strong>Quy trình:</strong></p>
+        <ol>
+            <li>Validate định dạng email</li>
+            <li>Kiểm tra email tồn tại trong database</li>
+            <li>Kiểm tra tài khoản có bị khóa không</li>
+            <li>Verify mật khẩu bằng <code>password_verify()</code></li>
+            <li>Tạo session nếu đăng nhập thành công</li>
+        </ol>
+        <p><strong>Độ ưu tiên:</strong> <span class="badge badge-high">Cao</span></p>
+    </div>
+
+    <div class="requirement">
+        <h3>FR-03: Brute-force protection</h3>
+        <p><strong>Mô tả:</strong> Bảo vệ tài khoản khỏi tấn công brute-force</p>
+        <p><strong>Cơ chế:</strong></p>
+        <ul>
+            <li>Đếm số lần đăng nhập sai (lưu trong <code>login_attempts</code>)</li>
+            <li>Khóa tài khoản 30 phút sau 5 lần nhập sai</li>
+            <li>Reset counter khi đăng nhập thành công</li>
+        </ul>
+        <p><strong>Độ ưu tiên:</strong> <span class="badge badge-high">Cao</span></p>
+    </div>
+
+    <div class="requirement">
+        <h3>FR-04: Remember Me</h3>
+        <p><strong>Mô tả:</strong> Cho phép người dùng duy trì đăng nhập trong 7 ngày</p>
+        <p><strong>Cơ chế:</strong></p>
+        <ul>
+            <li>Tạo token ngẫu nhiên 64 ký tự</li>
+            <li>Lưu token vào bảng <code>remember_tokens</code></li>
+            <li>Set cookie với thời hạn 7 ngày</li>
+            <li>Auto-login khi phát hiện cookie hợp lệ</li>
+        </ul>
+        <p><strong>Độ ưu tiên:</strong> <span class="badge badge-medium">Trung bình</span></p>
+    </div>
+
+    <div class="requirement">
+        <h3>FR-05: Redirect theo role</h3>
+        <p><strong>Mô tả:</strong> Chuyển hướng người dùng đến trang phù hợp sau khi đăng nhập</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Role</th>
+                    <th>Redirect URL</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>admin</td>
+                    <td><code>/admin/dashboard</code></td>
+                </tr>
+                <tr>
+                    <td>owner</td>
+                    <td><code>/owner/dashboard</code></td>
+                </tr>
+                <tr>
+                    <td>customer</td>
+                    <td><code>/home</code></td>
+                </tr>
+            </tbody>
+        </table>
+        <p><strong>Độ ưu tiên:</strong> <span class="badge badge-high">Cao</span></p>
+    </div>
+
+    <h2>🔒 Yêu cầu bảo mật</h2>
+
+    <div class="requirement">
+        <h3>SEC-01: Password hashing</h3>
+        <p>Mật khẩu phải được hash bằng <code>password_hash()</code> với thuật toán <code>PASSWORD_BCRYPT</code></p>
+    </div>
+
+    <div class="requirement">
+        <h3>SEC-02: SQL Injection prevention</h3>
+        <p>Sử dụng Prepared Statements cho tất cả query database</p>
+    </div>
+
+    <div class="requirement">
+        <h3>SEC-03: Session security</h3>
+        <p>Session phải được regenerate sau khi đăng nhập thành công</p>
+    </div>
+
+    <div class="requirement">
+        <h3>SEC-04: Cookie security</h3>
+        <p>Cookie phải có flag <code>httponly</code> và <code>samesite=Lax</code></p>
+    </div>
+
+    <h2>📊 Database Schema</h2>
+
+    <h3>Bảng: users</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Cột</th>
+                <th>Kiểu dữ liệu</th>
+                <th>Mô tả</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>id</td>
+                <td>INT PRIMARY KEY</td>
+                <td>ID người dùng</td>
+            </tr>
+            <tr>
+                <td>email</td>
+                <td>VARCHAR(255) UNIQUE</td>
+                <td>Email đăng nhập</td>
+            </tr>
+            <tr>
+                <td>password</td>
+                <td>VARCHAR(255)</td>
+                <td>Mật khẩu đã hash</td>
+            </tr>
+            <tr>
+                <td>role</td>
+                <td>ENUM('admin','owner','customer')</td>
+                <td>Vai trò người dùng</td>
+            </tr>
+            <tr>
+                <td>is_active</td>
+                <td>TINYINT(1)</td>
+                <td>Trạng thái kích hoạt</td>
+            </tr>
+            <tr>
+                <td>login_attempts</td>
+                <td>INT DEFAULT 0</td>
+                <td>Số lần đăng nhập sai</td>
+            </tr>
+            <tr>
+                <td>locked_until</td>
+                <td>DATETIME NULL</td>
+                <td>Thời gian khóa tài khoản</td>
+            </tr>
+            <tr>
+                <td>last_login_at</td>
+                <td>DATETIME NULL</td>
+                <td>Lần đăng nhập cuối</td>
+            </tr>
+            <tr>
+                <td>login_ip</td>
+                <td>VARCHAR(45) NULL</td>
+                <td>IP đăng nhập cuối</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Bảng: remember_tokens</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Cột</th>
+                <th>Kiểu dữ liệu</th>
+                <th>Mô tả</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>id</td>
+                <td>INT PRIMARY KEY</td>
+                <td>ID token</td>
+            </tr>
+            <tr>
+                <td>user_id</td>
+                <td>INT FOREIGN KEY</td>
+                <td>ID người dùng</td>
+            </tr>
+            <tr>
+                <td>token</td>
+                <td>VARCHAR(64) UNIQUE</td>
+                <td>Remember token</td>
+            </tr>
+            <tr>
+                <td>expires_at</td>
+                <td>DATETIME</td>
+                <td>Thời gian hết hạn</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>🧪 Test Cases</h2>
+
+    <div class="requirement">
+        <h3>TC-01: Đăng nhập thành công</h3>
+        <p><strong>Input:</strong> Email và password đúng</p>
+        <p><strong>Expected:</strong> Redirect đến dashboard tương ứng</p>
+    </div>
+
+    <div class="requirement">
+        <h3>TC-02: Email không tồn tại</h3>
+        <p><strong>Input:</strong> Email không có trong database</p>
+        <p><strong>Expected:</strong> Hiển thị lỗi "Email hoặc mật khẩu không đúng"</p>
+    </div>
+
+    <div class="requirement">
+        <h3>TC-03: Mật khẩu sai</h3>
+        <p><strong>Input:</strong> Email đúng, password sai</p>
+        <p><strong>Expected:</strong> Tăng login_attempts, hiển thị lỗi</p>
+    </div>
+
+    <div class="requirement">
+        <h3>TC-04: Tài khoản bị khóa</h3>
+        <p><strong>Input:</strong> Nhập sai 5 lần liên tiếp</p>
+        <p><strong>Expected:</strong> Khóa tài khoản 30 phút</p>
+    </div>
+
+    <div class="requirement">
+        <h3>TC-05: Remember Me</h3>
+        <p><strong>Input:</strong> Đăng nhập với checkbox "Ghi nhớ" được chọn</p>
+        <p><strong>Expected:</strong> Tạo cookie, auto-login lần sau</p>
+    </div>
+
+    <h2>📝 Ghi chú</h2>
+    <ul>
+        <li>File này được tạo bởi: <strong>Nguyễn Văn Quang</strong></li>
+        <li>Ngày tạo: <strong>03/04/2026</strong></li>
+        <li>Branch: <strong>feature/auth</strong></li>
+        <li>Commit: <strong>415fb16</strong></li>
+    </ul>
+
+    <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #ddd; text-align: center; color: #666;">
+        <p>&copy; 2026 Barber Spa - Tài liệu SRS</p>
+    </div>
 </div>
-
-<script>
-function togglePwd() {
-    const input = document.getElementById('passwordInput');
-    input.type = input.type === 'password' ? 'text' : 'password';
-}
-document.getElementById('loginForm').addEventListener('submit', function() {
-    document.getElementById('btnText').textContent = 'Đang xử lý...';
-    document.getElementById('btnSpinner').classList.remove('d-none');
-    document.getElementById('submitBtn').disabled = true;
-});
-</script>
 </body>
 </html>

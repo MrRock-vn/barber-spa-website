@@ -1,52 +1,43 @@
 <?php
-// ============================================================
-// public/forgot-password.php  — AUTH-01
+// ============================================================================
+// public/forgot-password.php - Quên mật khẩu (Standalone version)
 // Người làm: Nguyễn Văn Quang
-// Branch: feature/auth
-// ============================================================
+// ============================================================================
+
 session_start();
 require_once __DIR__ . '/../config/db.php';
 
-if (isset($_SESSION['user'])) {
-    header('Location: /index.php');
-    exit;
-}
-
-$error   = '';
+$error = '';
 $success = '';
+$email = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
 
-    if (empty($email)) {
-        $error = 'Vui lòng nhập email.';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Email không đúng định dạng.';
     } else {
-        $db   = getDB();
-        $stmt = $db->prepare('SELECT id FROM users WHERE email = ? AND is_active = 1 LIMIT 1');
+        $db = getDB();
+        $stmt = $db->prepare('SELECT * FROM users WHERE email = ? LIMIT 1');
         $stmt->execute([$email]);
         $user = $stmt->fetch();
 
-        // Luôn hiện thông báo thành công dù email có tồn tại hay không
-        // (tránh lộ thông tin người dùng)
         if ($user) {
-            // Xóa token cũ (nếu có)
-            $db->prepare('DELETE FROM password_resets WHERE email = ?')->execute([$email]);
+            // Tạo reset token
+            $resetToken = bin2hex(random_bytes(32));
+            $expiresAt = date('Y-m-d H:i:s', strtotime('+15 minutes'));
 
-            // Tạo token mới
-            $token   = bin2hex(random_bytes(32));
-            $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
+            $stmt = $db->prepare('UPDATE users SET reset_token=?, reset_token_expires=? WHERE id=?');
+            $stmt->execute([$resetToken, $expiresAt, $user['id']]);
 
-            $db->prepare('INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)')
-               ->execute([$email, $token, $expires]);
+            $resetLink = 'http://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . '/reset-password.php?token=' . urlencode($resetToken);
 
-            // Link đặt lại (hiện ra màn hình thay vì gửi email — OK cho demo)
-            $resetLink = 'http://localhost/barber-spa/public/reset-password.php?token=' . $token;
-            $success   = $resetLink; // truyền xuống HTML để hiển thị
+            // Trong thực tế, bạn sẽ gửi email ở đây
+            // Tạm thời hiển thị link
+            $success = 'Link đặt lại mật khẩu đã được tạo. (Trong thực tế sẽ gửi qua email)<br><a href="' . htmlspecialchars($resetLink) . '">Click vào đây để đặt lại mật khẩu</a>';
         } else {
-            // Email không tồn tại nhưng vẫn hiện thông báo giống nhau
-            $success = 'NOT_FOUND';
+            // Vẫn hiển thị success để tránh lộ thông tin user
+            $success = 'Nếu email tồn tại trong hệ thống, liên kết đặt lại mật khẩu đã được gửi.';
         }
     }
 }
@@ -56,72 +47,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quên mật khẩu — Barber & Spa</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Quên mật khẩu - Barber Spa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
     <style>
-        body { background: #f8f9fa; }
-        .auth-card {
-            max-width: 440px; margin: 80px auto;
-            background: #fff; border-radius: 12px;
-            box-shadow: 0 4px 24px rgba(0,0,0,.08);
-            padding: 40px 36px;
-        }
-        .auth-logo { font-size: 1.6rem; font-weight: 700; color: #1a1a2e; }
-        .auth-logo span { color: #e94560; }
-        .btn-primary { background: #e94560; border-color: #e94560; }
-        .btn-primary:hover { background: #c73652; border-color: #c73652; }
-        .link-box {
-            background: #f0fff4; border: 1px solid #b2f5c8;
-            border-radius: 8px; padding: 12px 16px;
-            word-break: break-all; font-size: .85rem;
-        }
+        .auth-page { min-height: 100vh; display: flex; align-items: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .auth-panel { width: 100%; max-width: 900px; margin: 0 auto; }
+        .auth-card { display: flex; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .auth-card-side { flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 50px 40px; }
+        .auth-brand { font-size: 28px; font-weight: bold; margin-bottom: 30px; }
+        .auth-side-title { font-size: 24px; font-weight: 600; margin-bottom: 15px; }
+        .auth-side-text { opacity: 0.9; margin-bottom: 30px; }
+        .auth-features { list-style: none; padding: 0; }
+        .auth-feature-item { padding: 10px 0; padding-left: 30px; position: relative; }
+        .auth-feature-item:before { content: "✓"; position: absolute; left: 0; font-weight: bold; }
+        .auth-card-body { flex: 1; padding: 50px 40px; }
+        .auth-form-control { padding: 12px 15px; border-radius: 8px; border: 1px solid #ddd; }
+        .auth-form-control:focus { border-color: #667eea; box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25); }
+        .auth-footer { margin-top: 20px; text-align: center; }
+        .auth-footer a { display: block; margin: 10px 0; color: #667eea; text-decoration: none; }
+        .auth-footer a:hover { text-decoration: underline; }
+        .alert { border-radius: 8px; }
     </style>
 </head>
 <body>
-<div class="auth-card">
-    <div class="auth-logo text-center mb-4">✂ Barber<span>&Spa</span></div>
-    <h5 class="mb-2 text-center">Quên mật khẩu</h5>
-    <p class="text-muted text-center small mb-4">
-        Nhập email đăng ký, chúng tôi sẽ gửi link đặt lại mật khẩu.
-    </p>
+<section class="auth-page">
+    <div class="container py-5">
+        <div class="auth-panel">
+            <div class="auth-card">
+                <div class="auth-card-side">
+                    <div class="auth-brand">BARBER SPA</div>
+                    <h3 class="auth-side-title">Không nhớ mật khẩu?</h3>
+                    <p class="auth-side-text">Chỉ cần nhập email và chúng tôi sẽ gửi liên kết khôi phục password đến bạn.</p>
+                    <ul class="auth-features">
+                        <li class="auth-feature-item">Bảo mật tài khoản tối ưu</li>
+                        <li class="auth-feature-item">Khôi phục nhanh chóng</li>
+                    </ul>
+                </div>
+                <div class="auth-card-body">
+                    <?php if ($error): ?>
+                        <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
+                    <?php endif; ?>
 
-    <?php if ($error): ?>
-        <div class="alert alert-danger py-2"><?= htmlspecialchars($error) ?></div>
+                    <?php if ($success): ?>
+                        <div class="alert alert-success"><?= $success ?></div>
+                    <?php endif; ?>
 
-    <?php elseif ($success && $success !== 'NOT_FOUND'): ?>
-        <!-- Thành công: hiện link (chế độ demo) -->
-        <div class="alert alert-success py-2">
-            <strong>Yêu cầu đã được ghi nhận!</strong><br>
-            <span class="small">Link đặt lại mật khẩu (demo — thay bằng email thật khi deploy):</span>
-        </div>
-        <div class="link-box mb-3">
-            <a href="<?= htmlspecialchars($success) ?>"><?= htmlspecialchars($success) ?></a>
-        </div>
-        <p class="small text-muted">⏰ Link có hiệu lực trong <strong>1 giờ</strong>.</p>
-        <a href="/login.php" class="btn btn-outline-secondary w-100">← Quay lại đăng nhập</a>
+                    <form method="POST" action="">
+                        <div class="mb-4">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control auth-form-control" 
+                                   value="<?= htmlspecialchars($email) ?>" placeholder="mail@domain.com" required>
+                        </div>
 
-    <?php elseif ($success === 'NOT_FOUND'): ?>
-        <!-- Email không tồn tại — vẫn hiện giống thành công -->
-        <div class="alert alert-success py-2">
-            Nếu email tồn tại trong hệ thống, bạn sẽ nhận được link đặt lại mật khẩu.
-        </div>
-        <a href="/login.php" class="btn btn-outline-secondary w-100">← Quay lại đăng nhập</a>
+                        <button type="submit" class="btn btn-primary w-100 btn-lg">Gửi yêu cầu</button>
+                    </form>
 
-    <?php else: ?>
-        <!-- Form nhập email -->
-        <form method="POST">
-            <div class="mb-4">
-                <label class="form-label">Địa chỉ email</label>
-                <input type="email" name="email" class="form-control"
-                       placeholder="example@gmail.com" required autofocus>
+                    <div class="auth-footer">
+                        <a href="login.php">Quay lại đăng nhập</a>
+                    </div>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary w-100">Gửi link đặt lại</button>
-        </form>
-        <hr class="my-4">
-        <p class="text-center mb-0 small">
-            <a href="/login.php">← Quay lại đăng nhập</a>
-        </p>
-    <?php endif; ?>
-</div>
+        </div>
+    </div>
+</section>
 </body>
 </html>
