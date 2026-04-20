@@ -1,9 +1,9 @@
 <?php
 return [
-    'version'      => '2.1.0',
-    'tmn_code'     => '5652YMTY',
-    'hash_secret'  => '2AT2HZOW2D58PYMT5BJ6B24JHK98OGEN',
-    'pay_url'      => 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html',
-    'return_url'   => 'https://greedless-napped-greyhound.ngrok-free.dev/barber-spa/payment/vnpay-return',
-    'ipn_url'      => 'https://greedless-napped-greyhound.ngrok-free.dev/barber-spa/payment/vnpay-ipn',
+    'version'      => env('VNPAY_VERSION', '2.1.0'),
+    'tmn_code'     => env('VNPAY_TMN_CODE', ''),
+    'hash_secret'  => env('VNPAY_HASH_SECRET', ''),
+    'pay_url'      => env('VNPAY_PAY_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'),
+    'return_url'   => env('VNPAY_RETURN_URL', ''),
+    'ipn_url'      => env('VNPAY_IPN_URL', ''),
 ];

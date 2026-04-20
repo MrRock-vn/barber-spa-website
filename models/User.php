@@ -137,6 +137,26 @@ class User
         ]);
     }
 
+    public function findByRememberToken(string $token): ?array
+    {
+        // SECURITY: Validate token format - must be 64 hex characters
+        if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
+            return null;
+        }
+
+        $sql = "SELECT * FROM users
+                WHERE remember_token = :token
+                AND is_active = 1
+                AND email_verified_at IS NOT NULL
+                LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['token' => $token]);
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ?: null;
+    }
+
     public function verifyEmailByToken(string $token): bool
     {
         $sql = "UPDATE users

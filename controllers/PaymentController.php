@@ -74,6 +74,50 @@ class PaymentController
         }
 
         if ($action === 'mark_counter') {
+            // SECURITY: Verify payment_method is at_counter
+            if ($booking['payment_method'] !== 'at_counter') {
+                flash('error', 'Booking này không phải thanh toán tại quầy.');
+                redirect(BASE_URL . '/booking/' . $bookingId);
+            }
+            
+            // SECURITY: Verify payment_status is unpaid
+            if ($booking['payment_status'] !== 'unpaid') {
+                flash('error', 'Booking này đã được thanh toán.');
+                redirect(BASE_URL . '/booking/' . $bookingId);
+            }
+            
+            // SECURITY: Check if payment already exists for this booking
+            $existingPayment = $this->paymentModel->findByBookingId($bookingId);
+            if ($existingPayment && $existingPayment['status'] === 'success') {
+                flash('success', 'Booking đã được ghi nhận thanh toán tại quầy.');
+                redirect(BASE_URL . '/booking/' . $bookingId);
+            }
+            
+            if ($existingPayment) {
+                // Update existing payment (idempotent)
+                $this->paymentModel->markSuccess(
+                    (int) $existingPayment['id'],
+                    json_encode(['method' => 'at_counter', 'paid_at' => date('Y-m-d H:i:s')]),
+                    date('Y-m-d H:i:s')
+                );
+            } else {
+                // Create new payment record
+                $this->paymentModel->create([
+                    'booking_id' => $bookingId,
+                    'user_id' => (int) Auth::id(),
+                    'gateway' => 'cash',
+                    'transaction_id' => 'CASH_' . $bookingId . '_' . time(),
+                    'amount' => (float) $booking['total_price'],
+                    'currency' => 'VND',
+                    'status' => 'success',
+                    'gateway_response' => json_encode(['method' => 'at_counter', 'paid_at' => date('Y-m-d H:i:s')]),
+                    'paid_at' => date('Y-m-d H:i:s'),
+                ]);
+            }
+            
+            // Update booking payment_status
+            $this->bookingModel->updatePaymentStatus($bookingId, 'paid');
+            
             flash('success', 'Booking đã được ghi nhận thanh toán tại quầy.');
             redirect(BASE_URL . '/booking/' . $bookingId);
         }
@@ -83,68 +127,104 @@ class PaymentController
     }
 
     public function vnpay(): void
-{
-    Auth::requireLogin();
+    {
+        Auth::requireLogin();
 
-    $config = require __DIR__ . '/../config/vnpay.php';
+        $config = require __DIR__ . '/../config/vnpay.php';
 
-    $bookingId = (int)($_GET['booking_id'] ?? 0);
-    $booking = $this->bookingModel->findById($bookingId);
+        $bookingId = (int)($_GET['booking_id'] ?? 0);
+        $booking = $this->bookingModel->findById($bookingId);
 
-    if (!$booking) {
-        flash('error', 'Không tìm thấy lịch hẹn.');
-        redirect(BASE_URL . '/my-bookings');
+        if (!$booking) {
+            flash('error', 'Không tìm thấy lịch hẹn.');
+            redirect(BASE_URL . '/my-bookings');
+        }
+
+        // SECURITY: Ownership check - booking must belong to current user
+        if ((int) $booking['user_id'] !== (int) Auth::id()) {
+            http_response_code(403);
+            flash('error', 'Bạn không có quyền thanh toán lịch hẹn này.');
+            redirect(BASE_URL . '/my-bookings');
+        }
+
+        // SECURITY: Verify payment_method is online
+        if ($booking['payment_method'] !== 'online') {
+            flash('error', 'Booking này không được đặt thanh toán online.');
+            redirect(BASE_URL . '/booking/' . $bookingId);
+        }
+
+        // SECURITY: Verify booking not already paid
+        if ($booking['payment_status'] === 'paid') {
+            flash('error', 'Booking này đã được thanh toán.');
+            redirect(BASE_URL . '/booking/' . $bookingId);
+        }
+
+        $amount = (float)$booking['total_price'];
+        $vnp_TxnRef = 'BOOK_' . $bookingId . '_' . time();
+
+        // Lưu payment pending
+        $this->paymentModel->create([
+            'booking_id'     => $bookingId,
+            'user_id'        => (int)$booking['user_id'],
+            'gateway'        => 'vnpay',
+            'transaction_id' => $vnp_TxnRef,
+            'amount'         => $amount,
+            'currency'       => 'VND',
+            'status'         => 'pending',
+        ]);
+
+        $inputData = [
+            'vnp_Version'    => $config['version'],
+            'vnp_Command'    => 'pay',
+            'vnp_TmnCode'    => trim($config['tmn_code']),
+            'vnp_Amount'     => (int)round($amount * 100),
+            'vnp_CurrCode'   => 'VND',
+            'vnp_TxnRef'     => $vnp_TxnRef,
+            'vnp_OrderInfo'  => 'Thanh toan booking ' . $bookingId,
+            'vnp_OrderType'  => 'other',
+            'vnp_Locale'     => 'vn',
+            'vnp_ReturnUrl'  => trim($config['return_url']),
+            'vnp_IpAddr'     => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
+            'vnp_CreateDate' => date('YmdHis'),
+            'vnp_ExpireDate' => date('YmdHis', strtotime('+15 minutes')),
+        ];
+
+        // Sắp xếp tham số
+        ksort($inputData);
+
+        // Tạo chuỗi hash (CHÍNH XÁC theo VNPay sample code)
+        $hashString = "";
+        $queryString = "";
+        $i = 0;
+        
+        foreach ($inputData as $key => $value) {
+            $value = (string)$value;
+            $encodedKey = urlencode($key);
+            $encodedValue = urlencode($value);
+            
+            if ($i == 0) {
+                $hashString .= $encodedKey . "=" . $encodedValue;
+            } else {
+                $hashString .= "&" . $encodedKey . "=" . $encodedValue;
+            }
+            $queryString .= $encodedKey . "=" . $encodedValue . "&";
+            $i++;
+        }
+
+        // Tính chữ ký SHA512
+        $vnpSecureHash = hash_hmac(
+            'sha512',
+            $hashString,
+            trim($config['hash_secret']),
+            false
+        );
+
+        // Tạo URL thanh toán
+        $paymentUrl = $config['pay_url'] . "?" . $queryString . "vnp_SecureHash=" . $vnpSecureHash;
+
+        header('Location: ' . $paymentUrl);
+        exit;
     }
-
-    $amount = (float)$booking['total_price'];
-    $vnp_TxnRef = 'BOOK_' . $bookingId . '_' . time();
-
-    // Lưu payment pending
-    $this->paymentModel->create([
-        'booking_id'     => $bookingId,
-        'user_id'        => (int)$booking['user_id'],
-        'gateway'        => 'vnpay',
-        'transaction_id' => $vnp_TxnRef,
-        'amount'         => $amount,
-        'currency'       => 'VND',
-        'status'         => 'pending',
-    ]);
-
-    $inputData = [
-        'vnp_Version'    => $config['version'],
-        'vnp_Command'    => 'pay',
-        'vnp_TmnCode'    => trim($config['tmn_code']),
-        'vnp_Amount'     => (int)round($amount * 100),
-        'vnp_CurrCode'   => 'VND',
-        'vnp_TxnRef'     => $vnp_TxnRef,
-        'vnp_OrderInfo'  => 'Thanh toan booking ' . $bookingId,
-        'vnp_OrderType'  => 'other',
-        'vnp_Locale'     => 'vn',
-        'vnp_ReturnUrl'  => trim($config['return_url']),
-        'vnp_IpAddr'     => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
-        'vnp_CreateDate' => date('YmdHis'),
-        'vnp_ExpireDate' => date('YmdHis', strtotime('+15 minutes')),
-    ];
-
-    // Sắp xếp tham số
-    ksort($inputData);
-
-    // Tạo chuỗi hash chuẩn RFC3986
-    $hashString = http_build_query($inputData, '', '&', PHP_QUERY_RFC3986);
-
-    // Tính chữ ký
-    $vnpSecureHash = hash_hmac(
-        'sha512',
-        $hashString,
-        trim($config['hash_secret'])
-    );
-
-    // Tạo URL thanh toán
-    $paymentUrl = $config['pay_url'] . '?' . $hashString . '&vnp_SecureHash=' . $vnpSecureHash;
-
-    header('Location: ' . $paymentUrl);
-    exit;
-}
 
 public function vnpayReturn(): void
 {
@@ -153,11 +233,38 @@ public function vnpayReturn(): void
     $inputData = $_GET;
     $receivedHash = (string)($inputData['vnp_SecureHash'] ?? '');
 
+    // DEBUG: Log all received parameters
+    error_log("=== VNPay Return - All Parameters ===");
+    error_log(json_encode($_GET, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+
+    // Remove VNPay signature and non-VNPay parameters
     unset($inputData['vnp_SecureHash'], $inputData['vnp_SecureHashType']);
+    
+    // IMPORTANT: Remove any non-VNPay parameters (like 'path' from routing)
+    foreach ($inputData as $key => $value) {
+        if (strpos($key, 'vnp_') !== 0) {
+            unset($inputData[$key]);
+        }
+    }
+    
     ksort($inputData);
 
     // Tạo chuỗi hash giống lúc gửi
-    $hashString = http_build_query($inputData, '', '&', PHP_QUERY_RFC3986);
+    $hashString = "";
+    $i = 0;
+    
+    foreach ($inputData as $key => $value) {
+        $value = (string)$value;
+        $encodedKey = urlencode($key);
+        $encodedValue = urlencode($value);
+        
+        if ($i == 0) {
+            $hashString .= $encodedKey . "=" . $encodedValue;
+        } else {
+            $hashString .= "&" . $encodedKey . "=" . $encodedValue;
+        }
+        $i++;
+    }
 
     $calculatedHash = hash_hmac(
         'sha512',
@@ -165,18 +272,17 @@ public function vnpayReturn(): void
         trim($config['hash_secret'])
     );
 
-    // Debug mode - bỏ comment khi test
-    error_log('=== VNPAY RETURN DEBUG ===');
-    error_log('Received hash   : ' . $receivedHash);
-    error_log('Calculated hash : ' . $calculatedHash);
-    error_log('Hash string     : ' . $hashString);
-    error_log('Config hash_secret: ' . trim($config['hash_secret']));
-    error_log('Response code   : ' . ($_GET['vnp_ResponseCode'] ?? 'N/A'));
+    // DEBUG: Log signature verification
+    error_log("=== VNPay Return Debug ===");
+    error_log("Received Hash: " . $receivedHash);
+    error_log("Calculated Hash: " . $calculatedHash);
+    error_log("Hash String: " . $hashString);
+    error_log("Hash Secret: " . trim($config['hash_secret']));
+    error_log("Match: " . (hash_equals($calculatedHash, $receivedHash) ? "YES" : "NO"));
 
-    // IMPORTANT: Enable this only in development/sandbox to skip hash verification
-    $skipHashCheck = false; // Set to true for testing only
-    
-    if (!$skipHashCheck && !hash_equals($calculatedHash, $receivedHash)) {
+    // SECURITY: Always verify signature using hash_equals() to prevent timing attacks
+    if (!hash_equals($calculatedHash, $receivedHash)) {
+        error_log("SIGNATURE VERIFICATION FAILED");
         flash('error', 'Sai chữ ký bảo mật từ VNPay. Kiểm tra lại TMN Code và Hash Secret.');
         redirect(BASE_URL . '/my-bookings');
     }
@@ -193,6 +299,12 @@ public function vnpayReturn(): void
         redirect(BASE_URL . '/my-bookings');
     }
 
+    // SECURITY: Prevent double processing - check if already processed
+    if ($this->paymentModel->isProcessedTransaction($txnRef)) {
+        flash('success', 'Giao dịch này đã được xử lý trước đó.');
+        redirect(BASE_URL . '/booking/' . (int)$payment['booking_id']);
+    }
+
     if ($responseCode === '00') {
         $this->paymentModel->markSuccess(
             (int)$payment['id'],
@@ -206,7 +318,7 @@ public function vnpayReturn(): void
             (int)$payment['id'],
             json_encode($_GET, JSON_UNESCAPED_UNICODE)
         );
-        $this->bookingModel->updatePaymentStatus((int)$payment['booking_id'], 'failed');
+        $this->bookingModel->updatePaymentStatus((int)$payment['booking_id'], 'unpaid');
         flash('error', 'Thanh toán thất bại.');
     }
 
@@ -228,6 +340,7 @@ public function vnpayIpn(): void
     $hashString = http_build_query($inputData, '', '&', PHP_QUERY_RFC3986);
     $calculatedHash = hash_hmac('sha512', $hashString, trim($config['hash_secret']));
 
+    // SECURITY: Always verify signature
     if (!hash_equals($calculatedHash, $receivedHash)) {
         echo json_encode(['RspCode' => '97', 'Message' => 'Invalid signature']);
         exit;
@@ -243,6 +356,12 @@ public function vnpayIpn(): void
         exit;
     }
 
+    // SECURITY: Prevent double processing
+    if ($this->paymentModel->isProcessedTransaction($txnRef)) {
+        echo json_encode(['RspCode' => '00', 'Message' => 'Already processed']);
+        exit;
+    }
+
     if ($responseCode === '00') {
         $this->paymentModel->markSuccess(
             (int)$payment['id'],
@@ -255,7 +374,7 @@ public function vnpayIpn(): void
             (int)$payment['id'],
             json_encode($_GET, JSON_UNESCAPED_UNICODE)
         );
-        $this->bookingModel->updatePaymentStatus((int)$payment['booking_id'], 'failed');
+        $this->bookingModel->updatePaymentStatus((int)$payment['booking_id'], 'unpaid');
     }
 
     echo json_encode(['RspCode' => '00', 'Message' => 'Confirm Success']);
@@ -395,6 +514,12 @@ public function momoReturn(): void
         redirect(BASE_URL . '/my-bookings');
     }
 
+    // SECURITY: Prevent double processing
+    if ($this->paymentModel->isProcessedTransaction($orderId)) {
+        flash('success', 'Giao dịch này đã được xử lý trước đó.');
+        redirect(BASE_URL . '/booking/' . (int)$payment['booking_id']);
+    }
+
     if ((string)$payment['status'] === 'pending') {
         if ($resultCode === '0') {
             $this->paymentModel->markSuccess(
@@ -454,6 +579,7 @@ public function momoIpn(): void
 
     $checkSignature = hash_hmac('sha256', $rawHash, $config['secret_key']);
 
+    // SECURITY: Always verify signature
     if (!hash_equals($checkSignature, $signature)) {
         echo json_encode(['status' => 'error', 'message' => 'Invalid signature']);
         exit;
@@ -464,6 +590,12 @@ public function momoIpn(): void
 
     if (!$payment) {
         echo json_encode(['status' => 'error', 'message' => 'Order not found']);
+        exit;
+    }
+
+    // SECURITY: Prevent double processing
+    if ($this->paymentModel->isProcessedTransaction($orderId)) {
+        echo json_encode(['status' => 'ok', 'message' => 'Already processed']);
         exit;
     }
 

@@ -29,6 +29,14 @@ class BookingController
             return;
         }
 
+        // SECURITY: Verify salon ownership to prevent accessing other owner's salons
+        if ((int) $salon['owner_id'] !== $ownerId) {
+            http_response_code(403);
+            echo '<h1>Forbidden</h1>';
+            echo '<p>Bạn không có quyền truy cập salon này.</p>';
+            return;
+        }
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->handlePostAction((int) $salon['id']);
             return;
@@ -50,11 +58,11 @@ class BookingController
         $bookings = $this->bookingModel->getBySalonId((int) $salon['id'], $filters);
 
         render('owner/bookings/index', [
-    'pageTitle' => 'Owner Bookings - ' . APP_NAME,
-    'navSection' => 'owner',
-    'salon' => $salon,
-    'bookings' => $bookings,
-]);
+            'pageTitle' => 'Owner Bookings - ' . APP_NAME,
+            'navSection' => 'owner',
+            'salon' => $salon,
+            'bookings' => $bookings,
+        ]);
     }
 
     private function handlePostAction(int $salonId): void

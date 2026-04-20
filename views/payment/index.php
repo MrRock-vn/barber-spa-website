@@ -18,7 +18,6 @@ function paymentStatusBadgeClass(string $status): string
     return match ($status) {
         'paid' => 'bg-success',
         'unpaid' => 'bg-secondary',
-        'failed' => 'bg-danger',
         default => 'bg-secondary',
     };
 }

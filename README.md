@@ -306,6 +306,299 @@ php reset-owner-password.php
 
 ---
 
+### 9️⃣ (Bắt buộc) Cấu Hình File .env
+
+Tạo hoặc cập nhật file `.env` tại thư mục gốc:
+
+```bash
+# Application
+APP_URL=http://localhost/barber-spa
+APP_ENV=development
+APP_DEBUG=true
+
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=barber_spa
+DB_USER=root
+DB_PASS=
+
+# Mail Configuration (Gmail SMTP)
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-app-password
+MAIL_FROM_EMAIL=your-email@gmail.com
+MAIL_FROM_NAME=Barber Spa
+
+# VNPay Configuration
+VNPAY_VERSION=2.1.0
+VNPAY_TMN_CODE=your-tmn-code
+VNPAY_HASH_SECRET=your-hash-secret
+VNPAY_PAY_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+VNPAY_RETURN_URL=http://localhost/barber-spa/payment/vnpay-return
+VNPAY_IPN_URL=http://localhost/barber-spa/payment/vnpay-ipn
+
+# MoMo Configuration (tương tự)
+MOMO_PARTNER_CODE=your-partner-code
+MOMO_ACCESS_KEY=your-access-key
+MOMO_SECRET_KEY=your-secret-key
+```
+
+**Hướng dẫn chi tiết:**
+
+**Gmail SMTP (Để gửi email xác thực):**
+
+1. Bật 2FA trên Google Account: https://myaccount.google.com
+2. Tạo App Password: https://myaccount.google.com/apppasswords
+3. Copy app password vào `MAIL_PASSWORD`
+
+**VNPay (Để thanh toán):**
+
+1. Đăng ký sandbox tại: https://sandbox.vnpayment.vn
+2. Lấy `VNPAY_TMN_CODE` và `VNPAY_HASH_SECRET` từ tài khoản
+3. Cập nhật vào `.env`
+
+---
+
+### 🔟 (Tuỳ chọn) Cấu Hình Thêm
+
+**Nếu sử dụng MoMo:**
+
+1. Đăng ký: https://business.momo.vn
+2. Lấy Partner Code, Access Key, Secret Key
+3. Cập nhật vào `.env` và `config/momo.php`
+
+**Nếu sử dụng database khác:**
+
+1. Cập nhật `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASS` trong `.env`
+2. Tạo database mới và import `database/schema.sql`
+
+---
+
+## 📝 Changelog - Phiên Bản Mới
+
+### ✅ Các Fix & Cải Tiến
+
+**Security Fixes (Sửa lỗ hổng bảo mật):**
+
+- ✅ SQL Injection prevention - dùng prepared statements
+- ✅ CSRF protection - thêm token validation
+- ✅ Authentication bypass - kiểm tra quyền trước mỗi action
+- ✅ Payment ownership check - verify user sở hữu booking
+- ✅ Password reset token validation - token phải hợp lệ
+- ✅ Email verification - mã xác thực phải đúng
+- ✅ Payment status validation - kiểm tra trạng thái hợp lệ
+- ✅ Double booking prevention - không cho đặt lịch trùng lặp
+- ✅ Timing attack prevention - dùng hash_equals() thay vì ==
+
+**Features (Tính năng mới):**
+
+- ✅ Email verification system - xác thực email đăng ký
+- ✅ Gmail SMTP integration - gửi email thực qua Gmail
+- ✅ VNPay payment - thanh toán online VNPay sandbox
+- ✅ Custom Mailer class - gửi email không cần PHPMailer
+- ✅ Remember me functionality - "Ghi nhớ đăng nhập"
+- ✅ Password reset flow - quên mật khẩu → reset qua email
+- ✅ Admin password reset script - reset mật khẩu admin
+- ✅ Environment configuration - dùng `.env` thay hardcode
+
+**Improvements (Cải tiến):**
+
+- ✅ Code refactoring - tổng hợp configuration
+- ✅ Error logging - log chi tiết lỗi VNPay, Database
+- ✅ Helper functions - thêm hàm tiện ích (e(), env(), etc)
+- ✅ Better error messages - thông báo lỗi chi tiết hơn
+
+---
+
+## 🧪 Hướng Dẫn Test Hoàn Chỉnh
+
+### Test User Flow (Khách hàng)
+
+**1. Đăng ký tài khoản mới:**
+
+```
+URL: http://localhost/barber-spa/register
+Email: test@example.com
+Password: Test@123
+→ Nhập mã xác thực từ email (check Gmail)
+→ Xác thực thành công, redirect login
+```
+
+**2. Đăng nhập:**
+
+```
+URL: http://localhost/barber-spa/login
+Email: test@example.com
+Password: Test@123
+→ Login thành công
+```
+
+**3. Quên mật khẩu (Password Reset):**
+
+```
+URL: http://localhost/barber-spa/forgot-password
+Email: test@example.com
+→ Kiểm tra email, click link reset
+→ Nhập mật khẩu mới
+→ Reset thành công, đăng nhập lại
+```
+
+**4. Tìm kiếm & Đặt lịch:**
+
+```
+URL: http://localhost/barber-spa (Trang chủ)
+→ Tìm kiếm salon (bằng từ khóa, khu vực, danh mục)
+→ Chọn salon → Xem chi tiết
+→ Bấm "Đặt lịch" → Chọn dịch vụ, nhân viên, thời gian
+→ Confirm booking
+```
+
+**5. Thanh toán:**
+
+```
+URL: http://localhost/barber-spa/my-bookings
+→ Chọn booking → Xem chi tiết
+→ Click "Thanh toán"
+→ Chọn "Thanh toán tại quầy" hoặc "VNPay"
+→ Confirm payment
+```
+
+### Test Owner Flow (Chủ salon)
+
+**1. Đăng nhập:**
+
+```
+Email: owner1@gmail.com
+Password: Owner@123
+URL: http://localhost/barber-spa/owner/dashboard
+```
+
+**2. Quản lý Salon:**
+
+```
+Menu → Quản lý salon
+→ Cập nhật thông tin, mô tả, hình ảnh
+→ Lưu thay đổi
+```
+
+**3. Quản lý Dịch vụ:**
+
+```
+Menu → Quản lý dịch vụ
+→ Thêm/sửa/xóa dịch vụ
+→ Cập nhật giá, thời gian, mô tả
+```
+
+**4. Quản lý Nhân viên:**
+
+```
+Menu → Quản lý nhân viên
+→ Thêm/sửa/xóa nhân viên
+→ Cập nhật lịch làm việc
+```
+
+**5. Xem Booking & Doanh thu:**
+
+```
+Menu → Quản lý booking
+→ Xem danh sách booking, confirm/hoàn thành
+Menu → Doanh thu
+→ Xem báo cáo, thống kê
+```
+
+### Test Admin Flow (Quản trị viên)
+
+**1. Đăng nhập:**
+
+```
+Email: admin@barberspa.vn
+Password: Admin@123
+URL: http://localhost/barber-spa/admin/dashboard
+```
+
+**2. Quản lý Users:**
+
+```
+Menu → Quản lý users
+→ Xem danh sách, khóa/mở khóa user
+→ Xóa user nếu cần
+```
+
+**3. Quản lý Salons:**
+
+```
+Menu → Quản lý salons
+→ Duyệt salon từ owner mới
+→ Ẩn/hiện salon, xóa nếu vi phạm
+```
+
+**4. Quản lý Categories:**
+
+```
+Menu → Quản lý categories
+→ Thêm/sửa/xóa danh mục dịch vụ
+```
+
+**5. Xem Thống kê:**
+
+```
+Dashboard
+→ Xem KPI: tổng users, salons, bookings, revenue
+→ Biểu đồ doanh thu theo thời gian
+```
+
+---
+
+## 🐛 Troubleshooting
+
+**Lỗi: Cannot connect to database**
+
+```
+→ Kiểm tra MySQL đã start
+→ Kiểm tra DB_HOST, DB_USER, DB_PASS trong .env
+→ Kiểm tra database `barber_spa` đã tạo
+```
+
+**Lỗi: Email không gửi được**
+
+```
+→ Kiểm tra MAIL_USERNAME, MAIL_PASSWORD trong .env
+→ Kiểm tra Gmail đã bật 2FA
+→ Kiểm tra App Password có đúng không
+→ Kiểm tra firewall/antivirus có chặn port 587
+```
+
+**Lỗi: VNPay signature failed**
+
+```
+→ Kiểm tra VNPAY_TMN_CODE, VNPAY_HASH_SECRET
+→ Copy chính xác từ portal (không có khoảng trắng)
+→ Kiểm tra VNPAY_RETURN_URL có đúng không
+```
+
+**Lỗi: 404 Not Found**
+
+```
+→ Kiểm tra Apache đã start
+→ Kiểm tra .htaccess file có tồn tại
+→ Kiểm tra URL có đúng (ví dụ: http://localhost/barber-spa/login)
+→ Kiểm tra APP_URL trong .env đúng với domain
+```
+
+---
+
+## 📧 Liên Hệ & Support
+
+Nếu gặp vấn đề:
+
+- 📧 Email: support@barber-spa.local
+- 💬 Facebook: [Link Facebook]
+- 📞 Phone: 0123-456-789
+
+---
+
 ## 🔐 Tài Khoản Test
 
 | Vai trò  | Email              | Mật khẩu     | Ghi chú                    |

@@ -89,11 +89,17 @@ class Payment
         ?string $gatewayResponse = null,
         ?string $paidAt = null
     ): bool {
+        // SECURITY: Verify payment exists and is in pending state before updating
+        $payment = $this->findById($id);
+        if (!$payment || $payment['status'] !== 'pending') {
+            return false;
+        }
+
         $sql = "UPDATE payments
                 SET status = :status,
                     gateway_response = :gateway_response,
                     paid_at = :paid_at
-                WHERE id = :id";
+                WHERE id = :id AND status = 'pending'";
 
         $stmt = $this->db->prepare($sql);
 

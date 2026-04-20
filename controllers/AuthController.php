@@ -49,6 +49,12 @@ class AuthController
                 redirect(BASE_URL . '/login');
             }
 
+            // SECURITY: Check email verified
+            if (empty($user['email_verified_at'])) {
+                flash('error', 'Vui lòng xác thực email trước khi đăng nhập. Kiểm tra email của bạn.');
+                redirect(BASE_URL . '/login');
+            }
+
             if ((int) $user['is_active'] !== 1) {
                 flash('error', 'Tài khoản của bạn đã bị khóa hoặc vô hiệu hóa.');
                 redirect(BASE_URL . '/login');
@@ -66,9 +72,10 @@ class AuthController
                 $attempts = (int) ($freshUser['login_attempts'] ?? 0);
 
                 if ($attempts >= 5) {
-                    $lockedUntil = date('Y-m-d H:i:s', strtotime('+1 minute'));
+                    // SECURITY: Increase lock time from 1 minute to 30 minutes to prevent brute force
+                    $lockedUntil = date('Y-m-d H:i:s', strtotime('+30 minutes'));
                     $this->userModel->lockAccount((int) $user['id'], $lockedUntil);
-                    flash('error', 'Bạn nhập sai quá nhiều lần. Tài khoản bị khóa tạm 1 phút.');
+                    flash('error', 'Bạn nhập sai quá nhiều lần. Tài khoản bị khóa tạm 30 phút.');
                 } else {
                     flash('error', 'Email hoặc mật khẩu không đúng.');
                 }
@@ -166,9 +173,59 @@ class AuthController
                 'email_token' => $emailToken,
             ]);
 
+            // Send verification email
+            $verifyLink = BASE_URL . '/verify-email?token=' . urlencode($emailToken);
+
+            $emailBody = '<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .header { background-color: #007bff; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center; }
+        .content { padding: 20px; }
+        .footer { background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px; }
+        .btn { display: inline-block; background-color: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .btn:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Xác Thực Email - Barber Spa</h2>
+        </div>
+        <div class="content">
+            <p>Xin chào ' . e($name) . ',</p>
+            <p>Cảm ơn bạn đã đăng ký tài khoản Barber Spa. Để hoàn tất đăng ký, vui lòng xác thực email của bạn.</p>
+            <p><a href="' . $verifyLink . '" class="btn">Xác Thực Email</a></p>
+            <p><strong>Hoặc copy liên kết bên dưới:</strong></p>
+            <p><a href="' . $verifyLink . '">' . $verifyLink . '</a></p>
+            <p style="color: #666; font-size: 12px;">Liên kết này sẽ hết hạn sau 24 giờ.</p>
+            <p style="color: #999; font-size: 12px;">Nếu đây không phải yêu cầu của bạn, vui lòng bỏ qua email này.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2026 Barber Spa. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>';
+
+
+            $sent = Mailer::send(
+                $email,
+                $name,
+                'Xác thực email - Barber Spa',
+                $emailBody
+            );
+
             unset($_SESSION['old']);
 
-            flash('success', 'Đăng ký thành công. Bạn có thể đăng nhập ngay. Token xác thực email đã được tạo.');
+            if ($sent) {
+                flash('success', 'Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản trước khi đăng nhập.');
+            } else {
+                flash('success', 'Đăng ký thành công. Token xác thực email đã được tạo. Vui lòng xác thực email để đăng nhập.');
+            }
             redirect(BASE_URL . '/login');
         }
     render('auth/register', [
@@ -220,14 +277,40 @@ class AuthController
 
             $resetLink = BASE_URL . '/reset-password?token=' . urlencode($resetToken);
 
-            $emailBody = '
-                <h2>Đặt lại mật khẩu</h2>
-                <p>Xin chào ' . e($user['name'] ?? 'bạn') . ',</p>
-                <p>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản Barber Spa.</p>
-                <p>Nhấn vào liên kết bên dưới để đặt lại mật khẩu:</p>
-                <p><a href="' . e($resetLink) . '">' . e($resetLink) . '</a></p>
-                <p>Liên kết này sẽ hết hạn sau 15 phút.</p>
-            ';
+            $emailBody = '<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .header { background-color: #dc3545; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center; }
+        .content { padding: 20px; }
+        .footer { background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px; }
+        .btn { display: inline-block; background-color: #dc3545; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .btn:hover { background-color: #c82333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Đặt Lại Mật Khẩu - Barber Spa</h2>
+        </div>
+        <div class="content">
+            <p>Xin chào ' . e($user['name'] ?? 'bạn') . ',</p>
+            <p>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản Barber Spa.</p>
+            <p><a href="' . $resetLink . '" class="btn">Đặt Lại Mật Khẩu</a></p>
+            <p><strong>Hoặc copy liên kết bên dưới:</strong></p>
+            <p><a href="' . $resetLink . '">' . $resetLink . '</a></p>
+            <p style="color: #666; font-size: 12px;">Liên kết này sẽ hết hạn sau 15 phút.</p>
+            <p style="color: #999; font-size: 12px;">Nếu đây không phải yêu cầu của bạn, vui lòng bỏ qua email này.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2026 Barber Spa. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>';
 
             $sent = Mailer::send(
                 (string) $user['email'],

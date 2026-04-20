@@ -2,10 +2,10 @@
 declare(strict_types=1);
 
 return [
-    'host' => 'smtp.gmail.com',
-    'port' => 587,
-    'username' => 'damtrungson00@gmail.com',
-    'password' => 'mpqg uwzk yhvg yqye',
-    'from_email' => 'damtrungson00@gmail.com',
-    'from_name' => 'Barber Spa',
+    'host' => env('MAIL_HOST', 'smtp.gmail.com'),
+    'port' => (int) env('MAIL_PORT', '587'),
+    'username' => env('MAIL_USERNAME', ''),
+    'password' => env('MAIL_PASSWORD', ''),
+    'from_email' => env('MAIL_FROM_EMAIL', ''),
+    'from_name' => env('MAIL_FROM_NAME', 'Barber Spa'),
 ];

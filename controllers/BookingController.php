@@ -210,7 +210,8 @@ class BookingController
                     redirect(BASE_URL . '/my-bookings');
                 }
 
-                $bookingId = $this->bookingModel->create([
+                // SECURITY: Use transaction-safe create to prevent double booking race condition
+                $bookingId = $this->bookingModel->createWithTransaction([
                     'user_id' => (int) Auth::id(),
                     'salon_id' => $salonId,
                     'staff_id' => (int) $wizard['staff_id'],
@@ -225,6 +226,11 @@ class BookingController
                     'notes' => $notes,
                     'slot_held_until' => date('Y-m-d H:i:s', strtotime('+10 minutes')),
                 ]);
+
+                if ($bookingId === null) {
+                    flash('error', 'Khung giờ này đã được đặt bởi người khác. Vui lòng chọn giờ khác.');
+                    redirect(BASE_URL . '/booking/create?step=3');
+                }
 
                 unset($_SESSION['booking_wizard']);
 
@@ -251,6 +257,7 @@ class BookingController
         $id = (int) $id;
         $booking = $this->bookingModel->findDetailedById($id);
 
+        // SECURITY: Verify booking ownership - prevent IDOR
         if (!$booking || (int) $booking['user_id'] !== (int) Auth::id()) {
             http_response_code(404);
             require_once __DIR__ . '/../views/errors/404.php';
@@ -258,10 +265,10 @@ class BookingController
         }
 
         render('booking/show', [
-    'pageTitle' => 'Chi tiết lịch hẹn - ' . APP_NAME,
-    'navSection' => 'user',
-    'booking' => $booking,
-]);
+            'pageTitle' => 'Chi tiết lịch hẹn - ' . APP_NAME,
+            'navSection' => 'user',
+            'booking' => $booking,
+        ]);
     }
 
   public function myBookings(): void
@@ -288,6 +295,7 @@ class BookingController
         $bookingId = (int) ($_POST['booking_id'] ?? 0);
         $booking = $this->bookingModel->findById($bookingId);
 
+        // SECURITY: Verify booking ownership - prevent canceling other user's bookings
         if (!$booking || (int) $booking['user_id'] !== (int) Auth::id()) {
             flash('error', 'Không tìm thấy lịch hẹn.');
             redirect(BASE_URL . '/my-bookings');
@@ -303,9 +311,4 @@ class BookingController
         redirect(BASE_URL . '/my-bookings');
     }
 
-    public function reschedule(): void
-    {
-        Auth::requireLogin();
-        echo '<h1>Reschedule Booking</h1>';
-    }
 }

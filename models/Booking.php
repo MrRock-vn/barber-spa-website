@@ -218,6 +218,52 @@ class Booking
         return (int) $this->db->lastInsertId();
     }
 
+    /**
+     * SECURITY: Create booking with transaction to prevent race condition (double booking)
+     * Uses database-level locking to ensure slot availability
+     */
+    public function createWithTransaction(array $data): ?int
+    {
+        try {
+            $this->db->beginTransaction();
+
+            // SECURITY: Lock the staff row to prevent concurrent bookings
+            $lockSql = "SELECT id FROM staff WHERE id = :staff_id FOR UPDATE";
+            $lockStmt = $this->db->prepare($lockSql);
+            $lockStmt->execute(['staff_id' => $data['staff_id']]);
+
+            // Re-check for conflicts within transaction
+            if ($this->hasStaffConflict(
+                (int) $data['staff_id'],
+                $data['booking_date'],
+                $data['start_time'],
+                $data['end_time']
+            )) {
+                $this->db->rollBack();
+                return null;
+            }
+
+            if ($this->hasHeldConflict(
+                (int) $data['staff_id'],
+                $data['booking_date'],
+                $data['start_time'],
+                $data['end_time']
+            )) {
+                $this->db->rollBack();
+                return null;
+            }
+
+            // Create booking
+            $bookingId = $this->create($data);
+
+            $this->db->commit();
+            return $bookingId;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            return null;
+        }
+    }
+
     public function updateStatus(int $id, string $status, ?string $cancelReason = null): bool
     {
         $sql = "UPDATE bookings

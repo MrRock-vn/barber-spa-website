@@ -261,6 +261,7 @@ class Salon
             'price_asc' => 's.id ASC'
         ];
 
+        // SECURITY: Whitelist sort values to prevent SQL injection
         $sort = $filters['sort'] ?? 'rating_desc';
         $orderBy = $allowedSort[$sort] ?? $allowedSort['rating_desc'];
 
