@@ -1,4 +1,4 @@
-SỬ DỤNG CÁC FILE CODE TÍCH HỢP SANG PHẦN CHÍNH - MAIN.
+# SỬ DỤNG CÁC FILE CODE TÍCH HỢP SANG PHẦN CHÍNH - MAIN.
 # 💈 Barber Spa - Website Đặt Lịch Cắt Tóc & Làm Đẹp.
 > **Đồ án / bài tập lớn Lập trình Web nâng cao**  
 > Xây dựng hệ thống website cho phép khách hàng tìm kiếm salon/barber, đặt lịch hẹn, thanh toán và quản lý lịch làm đẹp trực tuyến.
