@@ -159,33 +159,62 @@ barber-spa/
 
 ✨ Chức năng chính của hệ thống
 
-1. Khách hàng (User / Customer)
-   Đăng ký, đăng nhập, đăng xuất
-   Quên mật khẩu / đặt lại mật khẩu
-   Tìm kiếm salon theo từ khóa, khu vực, danh mục
-   Xem chi tiết salon
-   Xem danh sách dịch vụ và nhân viên
-   Đặt lịch hẹn theo quy trình nhiều bước
-   Xem danh sách lịch hẹn của tôi
-   Xem chi tiết booking
-   Hủy lịch hẹn khi còn hiệu lực
-   Thanh toán local giả lập cho booking online
-2. Chủ salon (Owner)
-   Xem dashboard thống kê salon
-   Quản lý booking của salon
-   Xem doanh thu
-   Quản lý dịch vụ
-   Quản lý nhân viên
-   Quản lý lịch làm việc theo tuần
-   Quản lý ngày nghỉ riêng của nhân viên
-3. Quản trị viên (Admin)
-   Dashboard tổng quan hệ thống
-   Quản lý users
-   Quản lý salons
-   Quản lý categories
-   Quản lý bookings
-   Quản lý
+## 1. Khách hàng (User / Customer)
 
+### 🔐 Xác thực & tài khoản
+- Đăng ký  
+- Đăng nhập  
+- Đăng xuất  
+- Quên mật khẩu / đặt lại mật khẩu  
+
+### 🔎 Tìm kiếm & khám phá
+- Tìm kiếm salon theo:
+  - Từ khóa  
+  - Khu vực  
+  - Danh mục  
+- Xem chi tiết salon  
+- Xem danh sách dịch vụ và nhân viên  
+
+### 📅 Đặt lịch & quản lý lịch
+- Đặt lịch hẹn (quy trình nhiều bước)  
+- Xem danh sách lịch hẹn của tôi  
+- Xem chi tiết booking  
+- Hủy lịch hẹn (khi còn hiệu lực)  
+
+### 💳 Thanh toán
+- Thanh toán (local giả lập cho booking online)  
+
+---
+
+## 2. Chủ salon (Owner)
+
+### 📊 Dashboard & thống kê
+- Xem dashboard thống kê salon  
+- Xem doanh thu  
+
+### 📅 Quản lý booking
+- Quản lý booking của salon  
+
+### 💼 Quản lý vận hành
+- Quản lý dịch vụ  
+- Quản lý nhân viên  
+
+### 🗓️ Quản lý lịch làm việc
+- Quản lý lịch làm việc theo tuần  
+- Quản lý ngày nghỉ riêng của nhân viên  
+
+---
+
+## 3. Quản trị viên (Admin)
+
+### 📊 Dashboard hệ thống
+- Dashboard tổng quan hệ thống  
+
+### ⚙️ Quản lý dữ liệu
+- Quản lý users  
+- Quản lý salons  
+- Quản lý categories  
+- Quản lý bookings
 ---
 
 ## ⚙️ Hướng dẫn cài đặt và chạy dự án
