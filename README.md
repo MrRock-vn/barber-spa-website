@@ -702,29 +702,37 @@ Admin
 
 ---
 
-🧪 Gợi ý kiểm thử nhanh
-User flow
-Đăng ký tài khoản mới
-Đăng nhập
-Tìm kiếm salon
-Đặt lịch
-Xem booking
-Thanh toán giả lập
-Hủy lịch nếu cần
-Owner flow
-Đăng nhập owner
-Xem dashboard
-Quản lý service
-Quản lý staff
-Cập nhật lịch làm việc
-Xem booking và revenue
-Admin flow
-Đăng nhập admin
-Xem dashboard
-Khóa / mở khóa user
-Ẩn / mở salon
-Thêm / sửa / xóa category
-Quản lý booking
-Kiểm duyệt review
+# 🧪 Gợi ý kiểm thử nhanh (Quick Test Scenarios)
+
+## 1. User Flow (Khách hàng)
+
+- [ ] Đăng ký tài khoản mới  
+- [ ] Đăng nhập  
+- [ ] Tìm kiếm salon  
+- [ ] Đặt lịch  
+- [ ] Xem booking  
+- [ ] Thanh toán giả lập  
+- [ ] Hủy lịch nếu cần  
+
+
+## 2. Owner Flow (Chủ salon)
+
+- [ ] Đăng nhập owner  
+- [ ] Xem dashboard  
+- [ ] Quản lý service  
+- [ ] Quản lý staff  
+- [ ] Cập nhật lịch làm việc  
+- [ ] Xem booking và revenue  
+
+
+## 3. Admin Flow (Quản trị viên)
+
+- [ ] Đăng nhập admin  
+- [ ] Xem dashboard  
+- [ ] Khóa / mở khóa user  
+- [ ] Ẩn / mở salon  
+- [ ] Thêm / sửa / xóa category  
+- [ ] Quản lý booking  
+- [ ] Kiểm duyệt review  
 
 _Hà Nội, tháng 04 năm 2026_
