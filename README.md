@@ -1,5 +1,5 @@
-# 💈 Barber Spa - Website Đặt Lịch Cắt Tóc & Làm Đẹp
-
+# SỬ DỤNG CÁC FILE CODE TÍCH HỢP SANG PHẦN CHÍNH-MAIN.
+# 💈 Barber Spa - Website Đặt Lịch Cắt Tóc & Làm Đẹp.
 > **Đồ án / bài tập lớn Lập trình Web nâng cao**  
 > Xây dựng hệ thống website cho phép khách hàng tìm kiếm salon/barber, đặt lịch hẹn, thanh toán và quản lý lịch làm đẹp trực tuyến.
 
@@ -31,7 +31,7 @@ Hệ thống hỗ trợ 3 vai trò chính:
 | Backend    | PHP 8 thuần theo mô hình MVC                             |
 | Database   | MySQL / MariaDB                                          |
 | Web server | Apache (XAMPP)                                           |
-| Thanh toán | Payment giả lập local, có cấu trúc để mở rộng VNPay/Momo |
+| Thanh toán | Payment giả lập local, có cấu trúc để mở rộng VNPay |
 
 ---
 
@@ -60,16 +60,12 @@ barber-spa/
 │   ├── get-slots.php
 │   ├── hold-slot.php
 │   └── payment/
-│       ├── momo-config.php
-│       ├── momo-redirect.php
-│       ├── momo-return.php
 │       ├── vnpay-config.php
 │       ├── vnpay-redirect.php
 │       └── vnpay-return.php
 ├── config/
 │   ├── db.php
 │   ├── mail.php
-│   ├── momo.php          [NEW] Cấu hình MoMo payment
 │   ├── vnpay.php         [NEW] Cấu hình VNPay payment
 ├── controllers/
 │   ├── AuthController.php
@@ -339,11 +335,7 @@ VNPAY_PAY_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
 VNPAY_RETURN_URL=http://localhost/barber-spa/payment/vnpay-return
 VNPAY_IPN_URL=http://localhost/barber-spa/payment/vnpay-ipn
 
-# MoMo Configuration (tương tự)
-MOMO_PARTNER_CODE=your-partner-code
-MOMO_ACCESS_KEY=your-access-key
-MOMO_SECRET_KEY=your-secret-key
-```
+
 
 **Hướng dẫn chi tiết:**
 
@@ -363,11 +355,6 @@ MOMO_SECRET_KEY=your-secret-key
 
 ### 🔟 (Tuỳ chọn) Cấu Hình Thêm
 
-**Nếu sử dụng MoMo:**
-
-1. Đăng ký: https://business.momo.vn
-2. Lấy Partner Code, Access Key, Secret Key
-3. Cập nhật vào `.env` và `config/momo.php`
 
 **Nếu sử dụng database khác:**
 
@@ -625,7 +612,7 @@ Nếu gặp vấn đề:
 - ✅ Đặt lịch hẹn (multi-step wizard)
 - ✅ Xem & quản lý lịch hẹn
 - ✅ Hủy lịch (khi còn hiệu lực)
-- ✅ Thanh toán online (MoMo, VNPay) hoặc tại quầy
+- ✅ Thanh toán online ( VNPay) hoặc tại quầy
 - ✅ Viết đánh giá & review
 
 ### 💼 Chủ salon (Owner)
@@ -652,20 +639,7 @@ Nếu gặp vấn đề:
 
 ## 🛠️ Cấu Hình Thanh Toán
 
-### MoMo Payment
 
-Cập nhật `config/momo.php`:
-
-```php
-[
-    'partner_code' => 'YOUR_PARTNER_CODE',
-    'access_key'   => 'YOUR_ACCESS_KEY',
-    'secret_key'   => 'YOUR_SECRET_KEY',
-    'endpoint'     => 'https://test-payment.momo.vn/v2/gateway/api/create',
-    'redirect_url' => 'https://yourdomain.com/barber-spa/payment/momo-return',
-    'ipn_url'      => 'https://yourdomain.com/barber-spa/payment/momo-ipn',
-]
-```
 
 ### VNPay Payment
 
@@ -683,8 +657,6 @@ Cập nhật `config/vnpay.php`:
 ```
 
 **Lấy credentials từ:**
-
-- **MoMo:** https://business.momo.vn
 - **VNPay:** https://merchant.vnpayment.vn
 
 ---
