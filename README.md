@@ -34,17 +34,17 @@ Barber Spa là nền tảng đặt lịch salon/barber trực tuyến, kết n�
 
 ## 📋 Tài liệu Đặc tả Yêu cầu Phần mềm (SRS)
 
-Các tài liệu SRS được lưu trong thư mục `docs/srs/`.
+Các tài liệu SRS được lưu trong thư mục [`/docs/srs/`](./docs/srs/)
 
-| Mã         | Chức năng                       | Tài liệu                           | Trạng thái |
-| ---------- | ------------------------------- | ---------------------------------- | ---------- |
-| AUTH-01    | Xác thực người dùng             | `docs/srs/SRS_AUTH.md`             | ✅         |
-| SEARCH-01  | Tìm kiếm & khám phá salon       | `docs/srs/SRS_SEARCH.md`           | ✅         |
-| BOOKING-01 | Đặt lịch dịch vụ                | `docs/srs/SRS_BOOKING.md`          | ✅         |
-| PAYMENT-01 | Thanh toán                      | `docs/srs/SRS_PAYMENT.md`          | ✅         |
-| REVIEW-01  | Đánh giá & kiểm duyệt review    | `docs/srs/SRS_REVIEW.md`           | ✅         |
-| SALON-01   | Quản lý salon / staff / service | `docs/srs/SRS_SALON_MANAGEMENT.md` | ✅         |
-| ADMIN-01   | Quản trị hệ thống               | `docs/srs/SRS_ADMIN.md`            | ✅         |
+| Mã        | Chức năng                 | Tài liệu                                                      | Trạng thái |
+| --------- | ------------------------- | ------------------------------------------------------------- | ---------- |
+| AUTH-01   | Xác thực người dùng       | [SRS_AUTH.md](./docs/srs/SRS_AUTH.md)                         | ✅         |
+| SEARCH-01 | Tìm kiếm & khám phá salon | [SRS_SEARCH.md](./docs/srs/SRS_SEARCH.md)                     | ✅         |
+| BOOK-01   | Đặt lịch hẹn              | [SRS_BOOKING.md](./docs/srs/SRS_BOOKING.md)                   | ✅         |
+| PAY-01    | Thanh toán                | [SRS_PAYMENT.md](./docs/srs/SRS_PAYMENT.md)                   | ✅         |
+| SALON-01  | Quản lý salon             | [SRS_SALON_MANAGEMENT.md](./docs/srs/SRS_SALON_MANAGEMENT.md) | ✅         |
+| REVIEW-01 | Đánh giá & review         | [SRS_REVIEW.md](./docs/srs/SRS_REVIEW.md)                     | ✅         |
+| ADMIN-01  | Quản trị hệ thống         | [SRS_ADMIN.md](./docs/srs/SRS_ADMIN.md)                       | ✅         |
 
 ## 🗂️ Cấu trúc thư mục dự án
 
