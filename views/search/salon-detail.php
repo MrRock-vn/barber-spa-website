@@ -37,7 +37,7 @@ function getSalonBannerImage(int $salonId): string
                             <div class="page-section-subtitle"><?= e($salon['address']) ?> • <?= e($salon['district']) ?>, <?= e($salon['city']) ?></div>
                         </div>
                         <div class="text-center">
-                            <div class="badge bg-warning text-dark p-2 mb-2" style="font-size: 1.1rem;">⭐ <?= e(number_format((float) ($salon['avg_rating'] ?? 0), 2)) ?></div>
+                            <div class="badge bg-warning text-dark p-2 mb-2" style="font-size: 1.1rem;">★ <?= e(number_format((float) ($salon['avg_rating'] ?? 0), 2)) ?></div>
                             <div class="small text-muted"><?= e((string) ($salon['total_reviews'] ?? 0)) ?> đánh giá</div>
                         </div>
                     </div>
@@ -45,28 +45,28 @@ function getSalonBannerImage(int $salonId): string
                     <div class="row g-3 mb-4">
                         <div class="col-md-4">
                             <div class="p-3 bg-light rounded-3 text-center">
-                                <div class="text-muted small">🕒 Giờ mở cửa</div>
+                                <div class="text-muted small">Giờ mở cửa</div>
                                 <div class="fw-bold mt-1"><?= e($salon['open_time']) ?> - <?= e($salon['close_time']) ?></div>
                             </div>
                         </div>
 
                         <div class="col-md-4">
                             <div class="p-3 bg-light rounded-3 text-center">
-                                <div class="text-muted small">📱 Điện thoại</div>
+                                <div class="text-muted small">Điện thoại</div>
                                 <div class="fw-bold mt-1"><?= e($salon['phone']) ?></div>
                             </div>
                         </div>
 
                         <div class="col-md-4">
                             <div class="p-3 bg-light rounded-3 text-center">
-                                <div class="text-muted small">📊 Lượt đặt</div>
+                                <div class="text-muted small">Lượt đặt</div>
                                 <div class="fw-bold mt-1"><?= e((string) ($salon['total_bookings'] ?? 0)) ?></div>
                             </div>
                         </div>
                     </div>
 
                     <div class="border-top pt-3">
-                        <h5 class="fw-bold mb-2">📝 Giới thiệu</h5>
+                        <h5 class="fw-bold mb-2">Giới thiệu</h5>
                         <p class="text-muted mb-0"><?= e((string) ($salon['description'] ?? 'Chưa có mô tả')) ?></p>
                     </div>
                 </div>
@@ -76,13 +76,13 @@ function getSalonBannerImage(int $salonId): string
         <div class="col-lg-4">
             <div class="card sticky-top" style="top: 20px;">
                 <div class="card-body p-4">
-                    <h4 class="fw-bold mb-3">🎯 Đặt lịch ngay</h4>
+                    <h4 class="fw-bold mb-3">Đặt lịch ngay</h4>
                     <p class="text-muted small mb-3">Chọn dịch vụ, nhân viên và giờ hẹn phù hợp chỉ trong vài bước.</p>
                     <a href="<?= e(BASE_URL . '/booking/create?salon_id=' . $salon['id'] . '&step=1') ?>" class="btn btn-danger w-100 fw-bold">
                         Đặt lịch ngay →
                     </a>
                     <div class="mt-3 p-2 bg-info bg-opacity-10 rounded text-center small">
-                        ✓ Xác nhận ngay • ✓ Thanh toán linh hoạt
+                        Xác nhận ngay • Thanh toán linh hoạt
                     </div>
                 </div>
             </div>
@@ -92,7 +92,7 @@ function getSalonBannerImage(int $salonId): string
     <?php if (!empty($images)): ?>
         <div class="card mb-4">
             <div class="card-body p-4">
-                <h5 class="fw-bold mb-3">📸 Hình ảnh salon</h5>
+                <h5 class="fw-bold mb-3">Hình ảnh salon</h5>
                 <div class="row g-3">
                     <?php foreach ($images as $index => $image): ?>
                         <div class="col-md-4 col-sm-6">
@@ -106,13 +106,13 @@ function getSalonBannerImage(int $salonId): string
 
     <div class="card mb-4">
         <div class="card-body p-4">
-            <h5 class="fw-bold mb-3">💇 Dịch vụ</h5>
+            <h5 class="fw-bold mb-3">Dịch vụ</h5>
 
             <?php if (empty($services)): ?>
                 <div class="alert alert-info mb-0">Chưa có dịch vụ nào.</div>
             <?php else: ?>
                 <div class="row g-3">
-                    <?php foreach ($services as $serviceIndex => $service): ?>
+                    <?php foreach ($services as $service): ?>
                         <div class="col-md-6">
                             <div class="card border-0 bg-white shadow-sm h-100 overflow-hidden" style="transition: transform 0.2s, box-shadow 0.2s;">
                                 <div style="height: 150px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); overflow: hidden;">
@@ -123,9 +123,9 @@ function getSalonBannerImage(int $salonId): string
                                         <strong class="fs-6"><?= e($service['name']) ?></strong>
                                         <span class="badge bg-danger"><?= e(formatMoney((float) $service['price'])) ?></span>
                                     </div>
-                                    <div class="small text-muted mb-2">📂 <?= e($service['category_name'] ?? 'Danh mục') ?></div>
+                                    <div class="small text-muted mb-2"><?= e($service['category_name'] ?? 'Danh mục') ?></div>
                                     <div class="small text-truncate mb-2"><?= e((string) ($service['description'] ?? '')) ?></div>
-                                    <div class="small">⏱ <?= e((string) $service['duration']) ?> phút</div>
+                                    <div class="small"><?= e((string) $service['duration']) ?> phút</div>
                                 </div>
                             </div>
                         </div>
@@ -138,9 +138,9 @@ function getSalonBannerImage(int $salonId): string
     <?php if (!empty($staffList)): ?>
         <div class="card mb-4">
             <div class="card-body p-4">
-                <h5 class="fw-bold mb-3">👥 Nhân viên</h5>
+                <h5 class="fw-bold mb-3">Nhân viên</h5>
                 <div class="row g-3">
-                    <?php foreach ($staffList as $staffIndex => $staff): ?>
+                    <?php foreach ($staffList as $staff): ?>
                         <div class="col-md-4 col-sm-6">
                             <div class="card border-0 bg-white shadow-sm h-100 text-center overflow-hidden">
                                 <div style="height: 180px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); overflow: hidden;">
@@ -148,7 +148,7 @@ function getSalonBannerImage(int $salonId): string
                                 </div>
                                 <div class="card-body">
                                     <h6 class="fw-bold mb-1"><?= e($staff['name']) ?></h6>
-                                    <div class="small text-muted mb-2">📱 <?= e((string) ($staff['phone'] ?? 'N/A')) ?></div>
+                                    <div class="small text-muted mb-2"><?= e((string) ($staff['phone'] ?? 'N/A')) ?></div>
                                     <div class="small bg-light rounded p-2"><?= e((string) ($staff['specialties'] ?? 'Chuyên viên')) ?></div>
                                 </div>
                             </div>
@@ -159,10 +159,34 @@ function getSalonBannerImage(int $salonId): string
         </div>
     <?php endif; ?>
 
+    <div class="card mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h5 class="fw-bold mb-1">Thống kê đánh giá</h5>
+                    <div class="small text-muted">
+                        Trung bình <?= e(number_format((float) ($salon['avg_rating'] ?? 0), 2)) ?>/5 trên <?= e((string) ($salon['total_reviews'] ?? 0)) ?> review.
+                    </div>
+                </div>
+                <form method="GET" action="<?= e(BASE_URL . '/salon/' . $salon['id']) ?>" class="d-flex gap-2">
+                    <select name="review_rating" class="form-select form-select-sm">
+                        <option value="">Tất cả sao</option>
+                        <?php for ($i = 5; $i >= 1; $i--): ?>
+                            <option value="<?= $i ?>" <?= ($_GET['review_rating'] ?? '') === (string) $i ? 'selected' : '' ?>>
+                                <?= $i ?> sao (<?= e((string) ($ratingDistribution[$i] ?? 0)) ?>)
+                            </option>
+                        <?php endfor; ?>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-dark">Lọc</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <?php if (!empty($reviews)): ?>
         <div class="card">
             <div class="card-body p-4">
-                <h5 class="fw-bold mb-3">⭐ Đánh giá gần đây</h5>
+                <h5 class="fw-bold mb-3">Đánh giá gần đây</h5>
                 <div class="row g-3">
                     <?php foreach ($reviews as $review): ?>
                         <div class="col-md-6">
@@ -170,15 +194,28 @@ function getSalonBannerImage(int $salonId): string
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <strong><?= e($review['customer_name']) ?></strong>
-                                        <span class="badge bg-warning text-dark">⭐ <?= e((string) $review['rating']) ?>/5</span>
+                                        <span class="badge bg-warning text-dark">★ <?= e((string) $review['rating']) ?>/5</span>
                                     </div>
-                                    <div class="text-muted small mb-2">📅 <?= e(formatDate($review['created_at'])) ?></div>
+                                    <div class="text-muted small mb-2"><?= e(formatDate($review['created_at'])) ?></div>
                                     <p class="mb-3 small"><?= e((string) ($review['content'] ?? 'Không có nội dung')) ?></p>
+                                    <div class="badge bg-success-subtle text-success border mb-3">Đã xác minh sử dụng dịch vụ</div>
 
                                     <?php if (!empty($review['owner_reply'])): ?>
                                         <div class="p-2 bg-white border-start border-3 border-success rounded small">
-                                            <strong class="text-success">✓ Phản hồi salon:</strong> <?= e($review['owner_reply']) ?>
+                                            <strong class="text-success">Phản hồi salon:</strong> <?= e($review['owner_reply']) ?>
                                         </div>
+                                    <?php endif; ?>
+
+                                    <?php if (Auth::check() && (int) Auth::id() !== (int) $review['user_id']): ?>
+                                        <form method="POST" action="<?= e(BASE_URL . '/report-review/' . $review['id']) ?>" class="mt-3 d-flex gap-2">
+                                            <?= csrfInput() ?>
+                                            <select name="reason" class="form-select form-select-sm">
+                                                <option value="spam">Spam</option>
+                                                <option value="offensive">Nội dung vi phạm</option>
+                                                <option value="false_info">Thông tin sai</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Báo cáo</button>
+                                        </form>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -190,7 +227,6 @@ function getSalonBannerImage(int $salonId): string
     <?php endif; ?>
 </div>
 
-<!-- Modal xem ảnh -->
 <div class="modal fade" id="imageModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">

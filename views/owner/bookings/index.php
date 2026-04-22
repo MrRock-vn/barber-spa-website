@@ -113,7 +113,7 @@ function ownerPaymentStatusBadgeClass(string $status): string
                                             <?php endif; ?>
 
                                             <?php if (in_array($booking['status'], ['pending', 'confirmed'], true)): ?>
-                                                <form method="POST" action="<?= e(BASE_URL . '/owner/bookings') ?>">
+                                                <form method="POST" action="<?= e(BASE_URL . '/owner/bookings') ?>" data-confirm="Xac nhan huy booking nay?">
                                                     <?= csrfInput() ?>
                                                     <input type="hidden" name="booking_id" value="<?= e((string) $booking['id']) ?>">
                                                     <input type="hidden" name="action" value="complete">

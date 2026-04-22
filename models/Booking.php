@@ -31,11 +31,13 @@ class Booking
                        s.city AS salon_city,
                        s.district AS salon_district,
                        st.name AS staff_name,
-                       st.phone AS staff_phone
+                       st.phone AS staff_phone,
+                       r.id AS review_id
                 FROM bookings b
                 LEFT JOIN users u ON u.id = b.user_id
                 LEFT JOIN salons s ON s.id = b.salon_id
                 LEFT JOIN staff st ON st.id = b.staff_id
+                LEFT JOIN reviews r ON r.booking_id = b.id
                 WHERE b.id = :id
                 LIMIT 1";
 
@@ -50,16 +52,28 @@ class Booking
     {
         $sql = "SELECT b.*,
                        s.name AS salon_name,
-                       st.name AS staff_name
+                       st.name AS staff_name,
+                       r.id AS review_id
                 FROM bookings b
                 LEFT JOIN salons s ON s.id = b.salon_id
                 LEFT JOIN staff st ON st.id = b.staff_id
+                LEFT JOIN reviews r ON r.booking_id = b.id
                 WHERE b.user_id = :user_id";
         $params = ['user_id' => $userId];
 
         if (!empty($filters['status'])) {
             $sql .= " AND b.status = :status";
             $params['status'] = $filters['status'];
+        }
+
+        if (!empty($filters['keyword'])) {
+            $sql .= " AND (
+                        b.id = :booking_id
+                        OR s.name LIKE :keyword
+                        OR st.name LIKE :keyword
+                    )";
+            $params['booking_id'] = (int) $filters['keyword'];
+            $params['keyword'] = '%' . $filters['keyword'] . '%';
         }
 
         $sql .= " ORDER BY b.booking_date DESC, b.start_time DESC, b.id DESC";
@@ -247,7 +261,9 @@ class Booking
                 (int) $data['staff_id'],
                 $data['booking_date'],
                 $data['start_time'],
-                $data['end_time']
+                $data['end_time'],
+                null,
+                $data['hold_session_id'] ?? null
             )) {
                 $this->db->rollBack();
                 return null;
@@ -255,6 +271,19 @@ class Booking
 
             // Create booking
             $bookingId = $this->create($data);
+
+            if (!empty($data['hold_session_id'])) {
+                try {
+                    $this->clearHoldForSession(
+                        (string) $data['hold_session_id'],
+                        (int) $data['staff_id'],
+                        $data['booking_date'],
+                        $data['start_time']
+                    );
+                } catch (PDOException $e) {
+                    // Existing databases without booking_holds should still allow booking creation.
+                }
+            }
 
             $this->db->commit();
             return $bookingId;
@@ -379,6 +408,70 @@ class Booking
         string $bookingDate,
         string $startTime,
         string $endTime,
+        ?int $excludeBookingId = null,
+        ?string $excludeSessionId = null
+    ): bool {
+        $sql = "SELECT SUM(total) AS total
+                FROM (
+                    SELECT COUNT(*) AS total
+                    FROM bookings
+                    WHERE staff_id = :staff_id
+                      AND booking_date = :booking_date
+                      AND slot_held_until IS NOT NULL
+                      AND slot_held_until >= NOW()
+                      AND status IN ('pending', 'confirmed')
+                      AND start_time < :end_time
+                      AND end_time > :start_time";
+        $params = [
+            'staff_id' => $staffId,
+            'booking_date' => $bookingDate,
+            'start_time' => $startTime,
+            'end_time' => $endTime,
+        ];
+
+        if ($excludeBookingId !== null) {
+            $sql .= " AND id != :exclude_booking_id";
+            $params['exclude_booking_id'] = $excludeBookingId;
+        }
+
+        $sql .= "
+                    UNION ALL
+                    SELECT COUNT(*) AS total
+                    FROM booking_holds
+                    WHERE staff_id = :hold_staff_id
+                      AND service_date = :hold_booking_date
+                      AND expires_at >= NOW()
+                      AND start_time < :hold_end_time
+                      AND end_time > :hold_start_time";
+
+        $params['hold_staff_id'] = $staffId;
+        $params['hold_booking_date'] = $bookingDate;
+        $params['hold_start_time'] = $startTime;
+        $params['hold_end_time'] = $endTime;
+
+        if ($excludeSessionId !== null && $excludeSessionId !== '') {
+            $sql .= " AND session_id != :exclude_session_id";
+            $params['exclude_session_id'] = $excludeSessionId;
+        }
+
+        $sql .= ") conflicts";
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+        } catch (PDOException $e) {
+            return $this->hasLegacyHeldConflict($staffId, $bookingDate, $startTime, $endTime, $excludeBookingId);
+        }
+
+        $row = $stmt->fetch();
+        return ((int) ($row['total'] ?? 0)) > 0;
+    }
+
+    private function hasLegacyHeldConflict(
+        int $staffId,
+        string $bookingDate,
+        string $startTime,
+        string $endTime,
         ?int $excludeBookingId = null
     ): bool {
         $sql = "SELECT COUNT(*) AS total
@@ -407,6 +500,70 @@ class Booking
 
         $row = $stmt->fetch();
         return ((int) ($row['total'] ?? 0)) > 0;
+    }
+
+    public function createHold(array $data): bool
+    {
+        $sql = "INSERT INTO booking_holds (
+                    user_id,
+                    session_id,
+                    staff_id,
+                    service_date,
+                    start_time,
+                    end_time,
+                    expires_at,
+                    created_at
+                ) VALUES (
+                    :user_id,
+                    :session_id,
+                    :staff_id,
+                    :service_date,
+                    :start_time,
+                    :end_time,
+                    :expires_at,
+                    NOW()
+                )
+                ON DUPLICATE KEY UPDATE
+                    user_id = VALUES(user_id),
+                    end_time = VALUES(end_time),
+                    expires_at = VALUES(expires_at),
+                    created_at = NOW()";
+
+        $stmt = $this->db->prepare($sql);
+
+        return $stmt->execute([
+            'user_id' => $data['user_id'],
+            'session_id' => $data['session_id'],
+            'staff_id' => $data['staff_id'],
+            'service_date' => $data['service_date'],
+            'start_time' => $data['start_time'],
+            'end_time' => $data['end_time'],
+            'expires_at' => $data['expires_at'],
+        ]);
+    }
+
+    public function clearExpiredHolds(): bool
+    {
+        $stmt = $this->db->prepare("DELETE FROM booking_holds WHERE expires_at < NOW()");
+        return $stmt->execute();
+    }
+
+    public function clearHoldForSession(string $sessionId, int $staffId, string $bookingDate, string $startTime): bool
+    {
+        $sql = "DELETE FROM booking_holds
+                WHERE session_id = :session_id
+                  AND staff_id = :staff_id
+                  AND service_date = :service_date
+                  AND start_time = :start_time";
+
+        $stmt = $this->db->prepare($sql);
+
+        return $stmt->execute([
+            'session_id' => $sessionId,
+            'staff_id' => $staffId,
+            'service_date' => $bookingDate,
+            'start_time' => $startTime,
+        ]);
     }
 
     public function getUpcomingBySalonId(int $salonId, int $limit = 10): array
@@ -708,6 +865,186 @@ class Booking
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['from_date' => $fromDate]);
+
+        return $stmt->fetchAll();
+    }
+
+    public function getBookingCountsByLastDays(int $days = 7, ?int $salonId = null): array
+    {
+        $fromDate = date('Y-m-d', strtotime(sprintf('-%d days', $days - 1)));
+
+        $sql = "SELECT booking_date, COUNT(*) AS total
+                FROM bookings
+                WHERE booking_date >= :from_date";
+        $params = ['from_date' => $fromDate];
+
+        if ($salonId !== null) {
+            $sql .= " AND salon_id = :salon_id";
+            $params['salon_id'] = $salonId;
+        }
+
+        $sql .= " GROUP BY booking_date ORDER BY booking_date ASC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        $rows = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $rows[$row['booking_date']] = (int) $row['total'];
+        }
+
+        $result = [];
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $date = date('Y-m-d', strtotime(sprintf('-%d days', $i)));
+            $result[] = [
+                'date' => $date,
+                'label' => date('d/m', strtotime($date)),
+                'total' => $rows[$date] ?? 0,
+            ];
+        }
+
+        return $result;
+    }
+
+    public function getRevenueByLastMonths(int $months = 6, ?int $salonId = null): array
+    {
+        $fromDate = date('Y-m-01', strtotime(sprintf('-%d months', $months - 1)));
+
+        $sql = "SELECT DATE_FORMAT(booking_date, '%Y-%m') AS month_key,
+                       SUM(total_price) AS revenue
+                FROM bookings
+                WHERE status = 'completed'
+                  AND booking_date >= :from_date";
+        $params = ['from_date' => $fromDate];
+
+        if ($salonId !== null) {
+            $sql .= " AND salon_id = :salon_id";
+            $params['salon_id'] = $salonId;
+        }
+
+        $sql .= " GROUP BY month_key ORDER BY month_key ASC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        $rows = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $rows[$row['month_key']] = (float) $row['revenue'];
+        }
+
+        $result = [];
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $key = date('Y-m', strtotime(sprintf('-%d months', $i)));
+            $result[] = [
+                'label' => date('m/Y', strtotime($key . '-01')),
+                'revenue' => $rows[$key] ?? 0,
+            ];
+        }
+
+        return $result;
+    }
+
+    public function getTopSalonsByBookings(int $limit = 5): array
+    {
+        $sql = "SELECT s.id,
+                       s.name,
+                       COUNT(b.id) AS total_bookings,
+                       SUM(CASE WHEN b.status = 'completed' THEN b.total_price ELSE 0 END) AS revenue
+                FROM bookings b
+                INNER JOIN salons s ON s.id = b.salon_id
+                GROUP BY s.id, s.name
+                ORDER BY total_bookings DESC, revenue DESC
+                LIMIT :limit";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    public function getTopStaffBySalonId(int $salonId, int $limit = 5): array
+    {
+        $sql = "SELECT st.id,
+                       st.name,
+                       COUNT(b.id) AS total_bookings
+                FROM bookings b
+                INNER JOIN staff st ON st.id = b.staff_id
+                WHERE b.salon_id = :salon_id
+                GROUP BY st.id, st.name
+                ORDER BY total_bookings DESC
+                LIMIT :limit";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':salon_id', $salonId, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    public function getTopServicesFromBookings(?int $salonId = null, int $limit = 5): array
+    {
+        $sql = "SELECT services
+                FROM bookings
+                WHERE status IN ('pending', 'confirmed', 'completed')";
+        $params = [];
+
+        if ($salonId !== null) {
+            $sql .= " AND salon_id = :salon_id";
+            $params['salon_id'] = $salonId;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        $stats = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $services = json_decode((string) $row['services'], true);
+            if (!is_array($services)) {
+                continue;
+            }
+
+            foreach ($services as $service) {
+                $name = trim((string) ($service['name'] ?? ''));
+                if ($name === '') {
+                    continue;
+                }
+
+                if (!isset($stats[$name])) {
+                    $stats[$name] = [
+                        'name' => $name,
+                        'total' => 0,
+                        'revenue' => 0.0,
+                    ];
+                }
+
+                $stats[$name]['total']++;
+                $stats[$name]['revenue'] += (float) ($service['price'] ?? 0);
+            }
+        }
+
+        usort($stats, static function (array $a, array $b): int {
+            return ($b['total'] <=> $a['total']) ?: ($b['revenue'] <=> $a['revenue']);
+        });
+
+        return array_slice($stats, 0, $limit);
+    }
+
+    public function getBusyHoursBySalonId(int $salonId, int $limit = 5): array
+    {
+        $sql = "SELECT TIME_FORMAT(start_time, '%H:%i') AS hour_label,
+                       COUNT(*) AS total_bookings
+                FROM bookings
+                WHERE salon_id = :salon_id
+                GROUP BY hour_label
+                ORDER BY total_bookings DESC, hour_label ASC
+                LIMIT :limit";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':salon_id', $salonId, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
 
         return $stmt->fetchAll();
     }

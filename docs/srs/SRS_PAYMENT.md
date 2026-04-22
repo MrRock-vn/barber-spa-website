@@ -28,7 +28,6 @@ Module PAY-01 bao gồm:
 - Thanh toán tại quầy
 - Thanh toán online
 - Tích hợp VNPay sandbox
-- Tích hợp Momo sandbox
 - Xử lý callback/return
 - Xác minh checksum/chữ ký
 - Lưu giao dịch thanh toán
@@ -55,7 +54,7 @@ Module PAY-01 bao gồm:
 | Bước | Hành động người dùng           | Phản hồi hệ thống                        |
 | ---- | ------------------------------ | ---------------------------------------- |
 | 1    | Chọn payment method = online   | Hệ thống chuẩn bị request thanh toán     |
-| 2    | Chọn gateway                   | VNPay hoặc Momo                          |
+| 2    | Chọn gateway                   | VNPay                                    |
 | 3    | Submit                         | Tạo booking/pending payment              |
 | 4    | Redirect sang gateway          | Người dùng thực hiện thanh toán          |
 | 5    | Gateway trả về return/callback | Hệ thống verify dữ liệu                  |
@@ -83,7 +82,6 @@ Module PAY-01 bao gồm:
 - `booking_id`: integer, bắt buộc
 - `gateway`: string, bắt buộc
   - `vnpay`
-  - `momo`
   - `cash`
 - `amount`: number, bắt buộc
 - `currency`: string, mặc định `VND`
@@ -167,7 +165,6 @@ Nếu `online`:
 ### 8.2 Gateway hỗ trợ
 
 - **VNPay sandbox**
-- **Momo sandbox**
 - **Cash** cho thanh toán trực tiếp
 
 ### 8.3 Trạng thái payment
@@ -199,7 +196,6 @@ Các trạng thái:
 ### 8.6 Xác minh callback
 
 - VNPay phải verify checksum
-- Momo phải verify chữ ký/callback
 - Chỉ cập nhật trạng thái khi xác minh hợp lệ
 
 ### 8.7 Hoàn tiền
@@ -222,13 +218,7 @@ Các trạng thái:
 - `api/payment/vnpay-redirect.php`
 - `api/payment/vnpay-return.php`
 
-### 9.2 Momo
-
-- `api/payment/momo-config.php`
-- `api/payment/momo-redirect.php`
-- `api/payment/momo-return.php`
-
-### 9.3 Route/controller
+### 9.2 Route/controller
 
 - `/payment`
 - `/payment/confirm`
@@ -295,8 +285,6 @@ Module PAY-01 được coi là hoàn thành khi:
 - Thanh toán tại quầy hoạt động
 - Có thể tạo URL thanh toán VNPay sandbox
 - Có thể xử lý return/callback VNPay
-- Có thể tạo URL thanh toán Momo sandbox
-- Có thể xử lý return/callback Momo
 - Verify checksum/chữ ký đúng
 - Không xử lý trùng transaction_id
 - Lưu payment record đúng
@@ -312,8 +300,6 @@ Module PAY-01 được coi là hoàn thành khi:
 - `/payment/confirm`
 - `api/payment/vnpay-redirect.php`
 - `api/payment/vnpay-return.php`
-- `api/payment/momo-redirect.php`
-- `api/payment/momo-return.php`
 
 ---
 
@@ -329,6 +315,3 @@ Trong project `barber-spa`, module này sẽ được triển khai qua:
 - `api/payment/vnpay-config.php`
 - `api/payment/vnpay-redirect.php`
 - `api/payment/vnpay-return.php`
-- `api/payment/momo-config.php`
-- `api/payment/momo-redirect.php`
-- `api/payment/momo-return.php`

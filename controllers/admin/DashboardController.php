@@ -6,6 +6,8 @@ require_once __DIR__ . '/../../models/User.php';
 require_once __DIR__ . '/../../models/Salon.php';
 require_once __DIR__ . '/../../models/Booking.php';
 require_once __DIR__ . '/../../models/Category.php';
+require_once __DIR__ . '/../../models/Payment.php';
+require_once __DIR__ . '/../../models/Review.php';
 
 class DashboardController
 {
@@ -13,6 +15,8 @@ class DashboardController
     private Salon $salonModel;
     private Booking $bookingModel;
     private Category $categoryModel;
+    private Payment $paymentModel;
+    private Review $reviewModel;
 
     public function __construct()
     {
@@ -20,6 +24,8 @@ class DashboardController
         $this->salonModel = new Salon();
         $this->bookingModel = new Booking();
         $this->categoryModel = new Category();
+        $this->paymentModel = new Payment();
+        $this->reviewModel = new Review();
     }
 
     public function index(): void
@@ -42,9 +48,20 @@ class DashboardController
         $confirmedBookings = $this->bookingModel->countBookingsByStatus('confirmed');
         $totalRevenue = $this->bookingModel->sumAllRevenue();
         $recentBookings = $this->bookingModel->getRecentForAdmin(5);
+        $bookingChart = $this->bookingModel->getBookingCountsByLastDays(7);
+        $revenueChart = $this->bookingModel->getRevenueByLastMonths(6);
+        $topSalons = $this->bookingModel->getTopSalonsByBookings(5);
+        $topServices = $this->bookingModel->getTopServicesFromBookings(null, 5);
 
         $activeSalons = $this->salonModel->countSalonsByStatus('active');
         $totalCategories = $this->categoryModel->countAll();
+        $totalReviews = $this->reviewModel->countAllReviews();
+        $flaggedReviews = $this->reviewModel->countFlagged();
+        $recentReviews = $this->reviewModel->getRecentForAdmin(5);
+        $totalPayments = $this->paymentModel->countAllPayments();
+        $successfulPayments = $this->paymentModel->countByStatus('success');
+        $paymentStatusCounts = $this->paymentModel->getStatusCounts();
+        $recentPayments = $this->paymentModel->getRecentForAdmin(5);
 
         render('admin/dashboard/index', [
             'pageTitle' => 'Admin Dashboard - ' . APP_NAME,
@@ -65,6 +82,17 @@ class DashboardController
             'totalRevenue' => $totalRevenue,
             'recentBookings' => $recentBookings,
             'totalCategories' => $totalCategories,
+            'totalReviews' => $totalReviews,
+            'flaggedReviews' => $flaggedReviews,
+            'totalPayments' => $totalPayments,
+            'successfulPayments' => $successfulPayments,
+            'paymentStatusCounts' => $paymentStatusCounts,
+            'recentPayments' => $recentPayments,
+            'recentReviews' => $recentReviews,
+            'bookingChart' => $bookingChart,
+            'revenueChart' => $revenueChart,
+            'topSalons' => $topSalons,
+            'topServices' => $topServices,
         ]);
     }
 }

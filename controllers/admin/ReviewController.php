@@ -73,16 +73,19 @@ class ReviewController
         switch ($action) {
             case 'publish':
                 $this->reviewModel->updateStatus($reviewId, 'published');
+                $this->salonModel->updateRatingStats((int) $review['salon_id']);
                 flash('success', 'Đã chuyển review sang published.');
                 break;
 
-            case 'hidden':
-                $this->reviewModel->updateStatus($reviewId, 'hidden');
+            case 'removed':
+                $this->reviewModel->updateStatus($reviewId, 'removed');
+                $this->salonModel->updateRatingStats((int) $review['salon_id']);
                 flash('success', 'Đã ẩn review.');
                 break;
 
             case 'flag':
                 $this->reviewModel->updateStatus($reviewId, 'flagged');
+                $this->salonModel->updateRatingStats((int) $review['salon_id']);
                 flash('success', 'Đã đánh dấu review.');
                 break;
 

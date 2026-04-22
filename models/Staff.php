@@ -55,6 +55,19 @@ class Staff
         return $this->getBySalonId($salonId, true);
     }
 
+    public function countBySalonId(int $salonId): int
+    {
+        $sql = "SELECT COUNT(*) AS total
+                FROM staff
+                WHERE salon_id = :salon_id";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['salon_id' => $salonId]);
+        $row = $stmt->fetch();
+
+        return (int) ($row['total'] ?? 0);
+    }
+
     public function create(array $data): int
     {
         $sql = "INSERT INTO staff (

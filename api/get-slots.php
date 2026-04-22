@@ -11,6 +11,8 @@ require_once __DIR__ . '/../models/Booking.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
+Auth::start();
+
 $staffId = (int) ($_GET['staff_id'] ?? 0);
 $bookingDate = trim($_GET['booking_date'] ?? '');
 $duration = (int) ($_GET['duration'] ?? 0);
@@ -67,7 +69,7 @@ for ($time = $start; $time < $end; $time += 30 * 60) {
         continue;
     }
 
-    if ($bookingModel->hasHeldConflict($staffId, $bookingDate, $startTime, $endTime)) {
+    if ($bookingModel->hasHeldConflict($staffId, $bookingDate, $startTime, $endTime, null, session_id())) {
         continue;
     }
 

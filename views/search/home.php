@@ -64,16 +64,18 @@
                 </div>
                 <div class="col-lg-8">
                     <form action="<?= e(BASE_URL . '/search') ?>" method="GET" class="row g-2">
-                        <div class="col-md-9">
+                        <div class="col-md-9 position-relative">
                             <input
                                 type="text"
-                                name="q"
+                                name="keyword"
+                                id="homeSearchInput"
                                 class="form-control form-control-lg search-input"
                                 placeholder="Nhập tên salon, khu vực hoặc dịch vụ..."
                                 maxlength="100"
                                 autocomplete="off"
-                                value="<?= e($_GET['q'] ?? '') ?>"
+                                value="<?= e($_GET['keyword'] ?? '') ?>"
                             >
+                            <div id="homeSearchSuggestions" class="list-group position-absolute w-100 shadow-sm d-none" style="z-index: 20;"></div>
                         </div>
                         <div class="col-md-3 d-grid">
                             <button type="submit" class="btn btn-primary btn-lg search-btn">
@@ -101,7 +103,7 @@
         <div class="row g-3">
             <?php foreach ($categories as $category): ?>
                 <div class="col-6 col-md-4 col-lg-3">
-                    <a href="<?= e(BASE_URL . '/search?q=' . urlencode((string) $category['name'])) ?>" class="category-pill d-flex align-items-center justify-content-center text-center text-decoration-none">
+                    <a href="<?= e(BASE_URL . '/search?keyword=' . urlencode((string) $category['name'])) ?>" class="category-pill d-flex align-items-center justify-content-center text-center text-decoration-none">
                         <?= e($category['name']) ?>
                     </a>
                 </div>
@@ -441,3 +443,43 @@
         © 2026 Barber Spa / Địa chỉ: 148B Trường Định, Hà Nội / Hệ thống đặt lịch barber spa hiện đại
     </div>
 </footer>
+
+<script>
+const homeSearchInput = document.getElementById('homeSearchInput');
+const homeSearchSuggestions = document.getElementById('homeSearchSuggestions');
+let homeSearchTimer = null;
+
+if (homeSearchInput && homeSearchSuggestions) {
+    homeSearchInput.addEventListener('input', function () {
+        const q = this.value.trim();
+        clearTimeout(homeSearchTimer);
+
+        if (q.length < 2) {
+            homeSearchSuggestions.classList.add('d-none');
+            homeSearchSuggestions.innerHTML = '';
+            return;
+        }
+
+        homeSearchTimer = setTimeout(async () => {
+            const response = await fetch(`<?= e(BASE_URL) ?>/api/autocomplete.php?q=${encodeURIComponent(q)}`);
+            const items = await response.json();
+
+            homeSearchSuggestions.innerHTML = '';
+            if (!Array.isArray(items) || items.length === 0) {
+                homeSearchSuggestions.classList.add('d-none');
+                return;
+            }
+
+            items.forEach(item => {
+                const link = document.createElement('a');
+                link.href = item.url;
+                link.className = 'list-group-item list-group-item-action';
+                link.textContent = `${item.label} (${item.type})`;
+                homeSearchSuggestions.appendChild(link);
+            });
+
+            homeSearchSuggestions.classList.remove('d-none');
+        }, 250);
+    });
+}
+</script>

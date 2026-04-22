@@ -65,6 +65,11 @@ class Review
                   AND r.status = 'published'";
         $params = ['salon_id' => $salonId];
 
+        if (!empty($filters['rating'])) {
+            $sql .= " AND r.rating = :rating";
+            $params['rating'] = (int) $filters['rating'];
+        }
+
         $sql .= " ORDER BY r.created_at DESC, r.id DESC";
 
         if (isset($filters['limit']) && isset($filters['offset'])) {
@@ -74,6 +79,10 @@ class Review
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':salon_id', $salonId, PDO::PARAM_INT);
 
+        if (!empty($filters['rating'])) {
+            $stmt->bindValue(':rating', (int) $filters['rating'], PDO::PARAM_INT);
+        }
+
         if (isset($filters['limit']) && isset($filters['offset'])) {
             $stmt->bindValue(':limit', (int) $filters['limit'], PDO::PARAM_INT);
             $stmt->bindValue(':offset', (int) $filters['offset'], PDO::PARAM_INT);
@@ -81,6 +90,25 @@ class Review
 
         $stmt->execute();
         return $stmt->fetchAll();
+    }
+
+    public function getRatingDistributionBySalonId(int $salonId): array
+    {
+        $sql = "SELECT rating, COUNT(*) AS total
+                FROM reviews
+                WHERE salon_id = :salon_id
+                  AND status = 'published'
+                GROUP BY rating";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['salon_id' => $salonId]);
+
+        $distribution = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
+        foreach ($stmt->fetchAll() as $row) {
+            $distribution[(int) $row['rating']] = (int) $row['total'];
+        }
+
+        return $distribution;
     }
 
     public function getBySalonId(int $salonId, array $filters = []): array
@@ -141,6 +169,26 @@ class Review
         return $stmt->fetchAll();
     }
 
+    public function getReviewableBookingsByUserId(int $userId): array
+    {
+        $sql = "SELECT b.*,
+                       s.name AS salon_name,
+                       st.name AS staff_name,
+                       r.id AS review_id
+                FROM bookings b
+                LEFT JOIN salons s ON s.id = b.salon_id
+                LEFT JOIN staff st ON st.id = b.staff_id
+                LEFT JOIN reviews r ON r.booking_id = b.id
+                WHERE b.user_id = :user_id
+                  AND b.status = 'completed'
+                ORDER BY b.booking_date DESC, b.start_time DESC, b.id DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['user_id' => $userId]);
+
+        return $stmt->fetchAll();
+    }
+
     public function getFlagged(array $filters = []): array
     {
         $sql = "SELECT r.*,
@@ -174,6 +222,65 @@ class Review
         $row = $stmt->fetch();
 
         return (int) ($row['total'] ?? 0);
+    }
+
+    public function countAllReviews(): int
+    {
+        $stmt = $this->db->query("SELECT COUNT(*) AS total FROM reviews");
+        $row = $stmt->fetch();
+
+        return (int) ($row['total'] ?? 0);
+    }
+
+    public function countBySalonId(int $salonId): int
+    {
+        $sql = "SELECT COUNT(*) AS total
+                FROM reviews
+                WHERE salon_id = :salon_id";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['salon_id' => $salonId]);
+        $row = $stmt->fetch();
+
+        return (int) ($row['total'] ?? 0);
+    }
+
+    public function getRecentForAdmin(int $limit = 5): array
+    {
+        $sql = "SELECT r.*,
+                       u.name AS customer_name,
+                       s.name AS salon_name
+                FROM reviews r
+                LEFT JOIN users u ON u.id = r.user_id
+                LEFT JOIN salons s ON s.id = r.salon_id
+                ORDER BY r.id DESC
+                LIMIT :limit";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    public function getRecentBySalonId(int $salonId, int $limit = 5): array
+    {
+        $sql = "SELECT r.*,
+                       u.name AS customer_name,
+                       st.name AS staff_name
+                FROM reviews r
+                LEFT JOIN users u ON u.id = r.user_id
+                LEFT JOIN staff st ON st.id = r.staff_id
+                WHERE r.salon_id = :salon_id
+                ORDER BY r.id DESC
+                LIMIT :limit";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':salon_id', $salonId, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
     }
 
     public function create(array $data): int
@@ -260,6 +367,14 @@ class Review
         ]);
     }
 
+    public function delete(int $id): bool
+    {
+        $sql = "DELETE FROM reviews WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+
+        return $stmt->execute(['id' => $id]);
+    }
+
     public function reply(int $id, string $reply): bool
     {
         $sql = "UPDATE reviews
@@ -274,6 +389,18 @@ class Review
             'id' => $id,
             'owner_reply' => $reply,
         ]);
+    }
+
+    public function clearReply(int $id): bool
+    {
+        $sql = "UPDATE reviews
+                SET owner_reply = NULL,
+                    owner_replied_at = NULL,
+                    updated_at = NOW()
+                WHERE id = :id";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute(['id' => $id]);
     }
 
     public function canEdit(array $review): bool

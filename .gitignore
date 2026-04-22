@@ -19,6 +19,12 @@ node_modules/
 *.log
 logs/
 
+# Local debug and one-off maintenance scripts
+debug-*.php
+test-*.php
+fix-test-*.php
+reset-all-passwords.php
+
 # Temporary files
 tmp/
 temp/

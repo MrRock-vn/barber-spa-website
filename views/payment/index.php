@@ -122,6 +122,7 @@ if (!is_array($serviceItems)) {
         </div>
 
         <div class="col-lg-4">
+            <?php if (($booking['payment_method'] ?? '') === 'at_counter'): ?>
             <div class="card mb-4">
                 <div class="card-body p-4">
                     <h5 class="fw-bold mb-3">Thanh toán tại quầy</h5>
@@ -140,7 +141,9 @@ if (!is_array($serviceItems)) {
                     </form>
                 </div>
             </div>
+            <?php endif; ?>
 
+            <?php if (($booking['payment_method'] ?? '') === 'online'): ?>
             <div class="card mb-4">
                 <div class="card-body p-4">
                     <h5 class="fw-bold mb-3">Thanh toán online qua VNPay</h5>
@@ -154,6 +157,7 @@ if (!is_array($serviceItems)) {
                     </a>
                 </div>
             </div>
+            <?php endif; ?>
 
             <a href="<?= e(BASE_URL . '/booking/' . $booking['id']) ?>" class="btn btn-secondary w-100">
                 Quay lại chi tiết booking

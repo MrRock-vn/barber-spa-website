@@ -31,6 +31,7 @@ function renderNavLinks(string $navSection): void
             echo '<a class="btn btn-outline-light btn-sm" href="' . e(BASE_URL . '/owner/revenue') . '">Revenue</a>';
             echo '<a class="btn btn-outline-light btn-sm" href="' . e(BASE_URL . '/owner/services') . '">Services</a>';
             echo '<a class="btn btn-outline-light btn-sm" href="' . e(BASE_URL . '/owner/staff') . '">Staff</a>';
+            echo '<a class="btn btn-outline-light btn-sm" href="' . e(BASE_URL . '/owner/reviews') . '">Reviews</a>';
             break;
 
         case 'user':
@@ -100,6 +101,7 @@ function renderOwnerSidebar(string $currentPath): void
         '/owner/revenue' => 'Revenue',
         '/owner/services' => 'Services',
         '/owner/staff' => 'Staff',
+        '/owner/reviews' => 'Reviews',
     ];
 
     echo '<div class="admin-sidebar">';
@@ -130,7 +132,7 @@ function renderBrandBySection(string $navSection): string
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($pageTitle) ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="<?= e(BASE_URL . '/public/css/style.css') ?>" rel="stylesheet">
 </head>
 <body class="<?= e($bodyClass) ?> d-flex flex-column min-vh-100">
@@ -197,6 +199,42 @@ function renderBrandBySection(string $navSection): string
         © <?= e((string) date('Y')) ?> <?= e(APP_NAME) ?>. MVC PHP thuần + MySQL + Bootstrap 5
     </div>
 </footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function cleanupStaleModalBackdrop() {
+    const activeModals = document.querySelectorAll('.modal.show');
+    if (activeModals.length > 0) {
+        return;
+    }
+
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('padding-right');
+    document.querySelectorAll('.modal-backdrop').forEach((element) => element.remove());
+}
+
+document.addEventListener('DOMContentLoaded', cleanupStaleModalBackdrop);
+window.addEventListener('pageshow', cleanupStaleModalBackdrop);
+
+document.addEventListener('submit', function (event) {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) {
+        return;
+    }
+
+    const confirmMessage = form.dataset.confirm;
+    if (confirmMessage && !window.confirm(confirmMessage)) {
+        event.preventDefault();
+        return;
+    }
+
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton && !submitButton.disabled) {
+        submitButton.dataset.originalText = submitButton.textContent;
+        submitButton.disabled = true;
+        submitButton.textContent = 'Đang xử lý...';
+    }
+});
+</script>
 </body>
 </html>

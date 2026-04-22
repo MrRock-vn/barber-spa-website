@@ -7,12 +7,9 @@ require_once __DIR__ . '/core/Database.php';
 require_once __DIR__ . '/core/Auth.php';
 require_once __DIR__ . '/core/helpers.php';
 
-// Initialize session first
-Auth::start();
-
-// Handle remember token auto login
+// SECURITY: Handle remember token auto login BEFORE Auth::start()
 $rememberToken = $_COOKIE['remember_token'] ?? '';
-if ($rememberToken && !Auth::check()) {
+if ($rememberToken && !isset($_SESSION['user_id'])) {
     // Validate token format: must be 64 hex characters
     if (preg_match('/^[a-f0-9]{64}$/', $rememberToken)) {
         require_once __DIR__ . '/models/User.php';
@@ -20,7 +17,9 @@ if ($rememberToken && !Auth::check()) {
         $user = $userModel->findByRememberToken($rememberToken);
         
         if ($user && (int) $user['is_active'] === 1 && !empty($user['email_verified_at'])) {
-            Auth::login($user);
+            // Set session before Auth::start()
+            $_SESSION['user_id'] = (int) $user['id'];
+            $_SESSION['user_role'] = $user['role'];
         } else {
             // Invalid token - remove cookie
             setcookie('remember_token', '', time() - 3600, '/');
@@ -30,6 +29,9 @@ if ($rememberToken && !Auth::check()) {
         setcookie('remember_token', '', time() - 3600, '/');
     }
 }
+
+// Initialize session
+Auth::start();
 
 $path = trim($_GET['path'] ?? '', '/');
 if ($path === '') {
@@ -53,19 +55,17 @@ $routes = [
     'booking'                => 'controllers/BookingController.php@create',
     'my-bookings'            => 'controllers/BookingController.php@myBookings',
     'cancel-booking'         => 'controllers/BookingController.php@cancel',
-    'reschedule'             => 'controllers/BookingController.php@reschedule',
 
     'payment'                => 'controllers/PaymentController.php@index',
     'payment/confirm'        => 'controllers/PaymentController.php@confirm',
     'payment/vnpay'          => 'controllers/PaymentController.php@vnpay',
     'payment/vnpay-return'   => 'controllers/PaymentController.php@vnpayReturn',
     'payment/vnpay-ipn'      => 'controllers/PaymentController.php@vnpayIpn',
-    'payment/momo'           => 'controllers/PaymentController.php@momo',
-    'payment/momo-return'    => 'controllers/PaymentController.php@momoReturn',
-    'payment/momo-ipn'       => 'controllers/PaymentController.php@momoIpn',
 
     'write-review'           => 'controllers/ReviewController.php@create',
     'edit-review/(\d+)'      => 'controllers/ReviewController.php@edit',
+    'delete-review/(\d+)'    => 'controllers/ReviewController.php@delete',
+    'report-review/(\d+)'    => 'controllers/ReviewController.php@report',
 
     'my-profile'             => 'controllers/UserController.php@profile',
     'edit-profile'           => 'controllers/UserController.php@editProfile',

@@ -13,212 +13,201 @@ function adminDashBookingStatusBadgeClass(string $status): string
     };
 }
 
-function adminDashSalonStatusBadgeClass(string $status): string
+function adminDashPaymentStatusBadgeClass(string $status): string
 {
     return match ($status) {
+        'success' => 'bg-success',
         'pending' => 'bg-warning text-dark',
-        'active' => 'bg-success',
-        'hidden' => 'bg-secondary',
-        'rejected' => 'bg-danger',
-        'deleted' => 'bg-dark',
+        'failed' => 'bg-danger',
+        'refunded' => 'bg-info text-dark',
         default => 'bg-secondary',
     };
 }
 ?>
 
-<div class="admin-page admin-dashboard container">
+<div class="admin-page admin-dashboard container-fluid">
     <div class="admin-page-header mb-4">
-        <div class="admin-page-title-group">
+        <div>
             <h2 class="page-section-title">Admin Dashboard</h2>
-            <div class="page-section-subtitle">Tổng quan hệ thống Barber Spa</div>
-        </div>
-    </div>
-
-    <div class="row g-4 mb-4">
-        <div class="col-xl-5">
-            <div class="card admin-card-surface admin-table-card h-100">
-                <div class="card-body">
-                    <h5 class="admin-section-title mb-3">KPI chính</h5>
-                    <div class="table-responsive">
-                        <table class="table mb-0">
-                            <tbody>
-                                <tr>
-                                    <th class="py-3 border-top-0">Tổng users</th>
-                                    <td class="py-3 text-end"><?= e((string) $totalUsers) ?></td>
-                                </tr>
-                                <tr>
-                                    <th>Tổng salons active</th>
-                                    <td class="text-end"><?= e((string) $activeSalons) ?></td>
-                                </tr>
-                                <tr>
-                                    <th>Bookings completed</th>
-                                    <td class="text-end"><?= e((string) $completedBookings) ?></td>
-                                </tr>
-                                <tr>
-                                    <th>Bookings cancelled</th>
-                                    <td class="text-end"><?= e((string) $cancelledBookings) ?></td>
-                                </tr>
-                                <tr>
-                                    <th>Total revenue</th>
-                                    <td class="text-end text-danger fw-bold"><?= e(formatMoney($totalRevenue)) ?></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-7">
-            <div class="card admin-card-surface h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <h5 class="admin-section-title mb-1">Thông báo hệ thống</h5>
-                            <div class="small text-muted">Thông tin quan trọng dành cho admin</div>
-                        </div>
-                    </div>
-                    <div class="list-group list-group-flush">
-                        <div class="list-group-item px-0 border-0 py-2">
-                            <div class="fw-semibold">Salons đang chờ duyệt</div>
-                            <div class="small text-muted">Hiện tại có <?= e((string) $pendingSalons) ?> salon cần kiểm tra.</div>
-                        </div>
-                        <div class="list-group-item px-0 border-0 py-2">
-                            <div class="fw-semibold">Bookings hôm nay</div>
-                            <div class="small text-muted">Có <?= e((string) $todayBookings) ?> booking mới trong ngày.</div>
-                        </div>
-                        <div class="list-group-item px-0 border-0 py-2">
-                            <div class="fw-semibold">Tổng doanh thu</div>
-                            <div class="small text-muted">Doanh thu hoàn tất hiện tại: <?= e(formatMoney($totalRevenue)) ?>.</div>
-                        </div>
-                        <div class="list-group-item px-0 border-0 py-2">
-                            <div class="fw-semibold">Tình trạng booking</div>
-                            <div class="small text-muted">Hoàn tất: <?= e((string) $completedBookings) ?>, Hủy: <?= e((string) $cancelledBookings) ?>.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <div class="page-section-subtitle">Tổng quan user, salon, booking, payment và review.</div>
         </div>
     </div>
 
     <div class="row g-3 mb-4">
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100">
+        <?php
+        $cards = [
+            ['label' => 'Users', 'value' => $totalUsers, 'meta' => 'Inactive: ' . $inactiveUsers],
+            ['label' => 'Salons', 'value' => $totalSalons, 'meta' => 'Active: ' . $activeSalons . ' | Pending: ' . $pendingSalons],
+            ['label' => 'Bookings', 'value' => $totalBookings, 'meta' => 'Today: ' . $todayBookings],
+            ['label' => 'Revenue', 'value' => formatMoney((float) $totalRevenue), 'meta' => 'Completed bookings'],
+            ['label' => 'Payments success', 'value' => $successfulPayments, 'meta' => 'Total payments: ' . $totalPayments],
+            ['label' => 'Reviews', 'value' => $totalReviews, 'meta' => 'Flagged: ' . $flaggedReviews],
+            ['label' => 'Categories', 'value' => $totalCategories, 'meta' => 'Service groups'],
+            ['label' => 'Pending bookings', 'value' => $pendingBookings, 'meta' => 'Confirmed: ' . $confirmedBookings],
+        ];
+        ?>
+        <?php foreach ($cards as $card): ?>
+            <div class="col-md-6 col-xl-3">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="text-muted small mb-2"><?= e($card['label']) ?></div>
+                        <div class="fs-3 fw-bold"><?= e((string) $card['value']) ?></div>
+                        <div class="small text-muted mt-2"><?= e($card['meta']) ?></div>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-7">
+            <div class="card h-100 shadow-sm border-0">
                 <div class="card-body">
-                    <div class="text-muted mb-2">Tổng users</div>
-                    <div class="fs-3 fw-bold"><?= e((string) $totalUsers) ?></div>
-                    <div class="small text-muted mt-2">Inactive: <?= e((string) $inactiveUsers) ?></div>
+                    <h5 class="fw-bold mb-3">Booking 7 ngày gần nhất</h5>
+                    <canvas id="bookingChart" height="120"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-5">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Doanh thu 6 tháng</h5>
+                    <canvas id="revenueChart" height="170"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Booking theo trạng thái</h5>
+                    <div class="d-flex flex-column gap-2">
+                        <div class="d-flex justify-content-between"><span>pending</span><strong><?= e((string) $pendingBookings) ?></strong></div>
+                        <div class="d-flex justify-content-between"><span>confirmed</span><strong><?= e((string) $confirmedBookings) ?></strong></div>
+                        <div class="d-flex justify-content-between"><span>completed</span><strong><?= e((string) $completedBookings) ?></strong></div>
+                        <div class="d-flex justify-content-between"><span>cancelled</span><strong><?= e((string) $cancelledBookings) ?></strong></div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100">
+        <div class="col-lg-4">
+            <div class="card h-100 shadow-sm border-0">
                 <div class="card-body">
-                    <div class="text-muted mb-2">Tổng salons</div>
-                    <div class="fs-3 fw-bold"><?= e((string) $totalSalons) ?></div>
-                    <div class="small text-muted mt-2">Pending: <?= e((string) $pendingSalons) ?></div>
+                    <h5 class="fw-bold mb-3">Payment theo trạng thái</h5>
+                    <?php foreach ($paymentStatusCounts as $status => $count): ?>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge <?= adminDashPaymentStatusBadgeClass((string) $status) ?>"><?= e((string) $status) ?></span>
+                            <strong><?= e((string) $count) ?></strong>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100">
+        <div class="col-lg-4">
+            <div class="card h-100 shadow-sm border-0">
                 <div class="card-body">
-                    <div class="text-muted mb-2">Tổng bookings</div>
-                    <div class="fs-3 fw-bold"><?= e((string) $totalBookings) ?></div>
-                    <div class="small text-muted mt-2">Hôm nay: <?= e((string) $todayBookings) ?></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="text-muted mb-2">Tổng categories</div>
-                    <div class="fs-3 fw-bold"><?= e((string) $totalCategories) ?></div>
-                    <div class="small text-muted mt-2">Revenue: <?= e(formatMoney($totalRevenue)) ?></div>
+                    <h5 class="fw-bold mb-3">Top salon nhiều lịch</h5>
+                    <?php if (empty($topSalons)): ?>
+                        <div class="text-muted">Chưa có dữ liệu.</div>
+                    <?php else: ?>
+                        <?php foreach ($topSalons as $salon): ?>
+                            <div class="d-flex justify-content-between border-bottom py-2">
+                                <span><?= e($salon['name']) ?></span>
+                                <strong><?= e((string) $salon['total_bookings']) ?></strong>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="row g-4">
-        <div class="col-lg-4">
-            <div class="card h-100">
+        <div class="col-xl-4">
+            <div class="card h-100 shadow-sm border-0">
                 <div class="card-body">
-                    <h5 class="fw-bold mb-3">Users mới nhất</h5>
-
-                    <?php if (empty($recentUsers)): ?>
-                        <div class="alert alert-info mb-0">Không có user.</div>
-                    <?php else: ?>
-                        <div class="d-flex flex-column gap-3">
-                            <?php foreach ($recentUsers as $user): ?>
-                                <div class="border rounded-3 p-3">
-                                    <div class="fw-semibold"><?= e($user['name']) ?></div>
-                                    <div class="small text-muted"><?= e($user['email']) ?></div>
-                                    <div class="small mt-1">Role: <?= e($user['role']) ?></div>
-                                </div>
-                            <?php endforeach; ?>
+                    <h5 class="fw-bold mb-3">Booking mới</h5>
+                    <?php foreach ($recentBookings as $booking): ?>
+                        <div class="border rounded-3 p-3 mb-2">
+                            <div class="fw-semibold">#<?= e((string) $booking['id']) ?> - <?= e($booking['salon_name']) ?></div>
+                            <div class="small text-muted"><?= e($booking['customer_name']) ?> | <?= e(formatDate($booking['booking_date'])) ?></div>
+                            <span class="badge <?= adminDashBookingStatusBadgeClass((string) $booking['status']) ?> mt-2"><?= e($booking['status']) ?></span>
                         </div>
-                    <?php endif; ?>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-4">
-            <div class="card h-100">
+        <div class="col-xl-4">
+            <div class="card h-100 shadow-sm border-0">
                 <div class="card-body">
-                    <h5 class="fw-bold mb-3">Salons mới nhất</h5>
-
-                    <?php if (empty($recentSalons)): ?>
-                        <div class="alert alert-info mb-0">Không có salon.</div>
-                    <?php else: ?>
-                        <div class="d-flex flex-column gap-3">
-                            <?php foreach ($recentSalons as $salon): ?>
-                                <div class="border rounded-3 p-3">
-                                    <div class="fw-semibold"><?= e($salon['name']) ?></div>
-                                    <div class="small text-muted"><?= e($salon['district']) ?>, <?= e($salon['city']) ?></div>
-                                    <div class="small mt-1"><?= e($salon['owner_name']) ?> - <?= e($salon['owner_email']) ?></div>
-                                    <div class="mt-2">
-                                        <span class="badge <?= adminDashSalonStatusBadgeClass((string) $salon['status']) ?>">
-                                            <?= e($salon['status']) ?>
-                                        </span>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
+                    <h5 class="fw-bold mb-3">Payment mới</h5>
+                    <?php foreach ($recentPayments as $payment): ?>
+                        <div class="border rounded-3 p-3 mb-2">
+                            <div class="fw-semibold"><?= e($payment['gateway']) ?> - <?= e(formatMoney((float) $payment['amount'])) ?></div>
+                            <div class="small text-muted"><?= e((string) ($payment['customer_name'] ?? '')) ?> | <?= e((string) ($payment['salon_name'] ?? '')) ?></div>
+                            <span class="badge <?= adminDashPaymentStatusBadgeClass((string) $payment['status']) ?> mt-2"><?= e($payment['status']) ?></span>
                         </div>
-                    <?php endif; ?>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-4">
-            <div class="card h-100">
+        <div class="col-xl-4">
+            <div class="card h-100 shadow-sm border-0">
                 <div class="card-body">
-                    <h5 class="fw-bold mb-3">Bookings mới nhất</h5>
-
-                    <?php if (empty($recentBookings)): ?>
-                        <div class="alert alert-info mb-0">Không có booking.</div>
+                    <h5 class="fw-bold mb-3">Top dịch vụ</h5>
+                    <?php if (empty($topServices)): ?>
+                        <div class="text-muted">Chưa có dữ liệu.</div>
                     <?php else: ?>
-                        <div class="d-flex flex-column gap-3">
-                            <?php foreach ($recentBookings as $booking): ?>
-                                <div class="border rounded-3 p-3">
-                                    <div class="fw-semibold">#<?= e((string) $booking['id']) ?> - <?= e($booking['salon_name']) ?></div>
-                                    <div class="small text-muted"><?= e($booking['customer_name']) ?> - <?= e($booking['staff_name']) ?></div>
-                                    <div class="small mt-1"><?= e(formatDate($booking['booking_date'])) ?> | <?= e(formatTime($booking['start_time'])) ?></div>
-                                    <div class="small mt-1 text-danger fw-semibold"><?= e(formatMoney((float) $booking['total_price'])) ?></div>
-                                    <div class="mt-2">
-                                        <span class="badge <?= adminDashBookingStatusBadgeClass((string) $booking['status']) ?>">
-                                            <?= e($booking['status']) ?>
-                                        </span>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
+                        <?php foreach ($topServices as $service): ?>
+                            <div class="d-flex justify-content-between border-bottom py-2">
+                                <span><?= e($service['name']) ?></span>
+                                <strong><?= e((string) $service['total']) ?></strong>
+                            </div>
+                        <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const bookingChartData = <?= json_encode($bookingChart, JSON_UNESCAPED_UNICODE) ?>;
+const revenueChartData = <?= json_encode($revenueChart, JSON_UNESCAPED_UNICODE) ?>;
+
+new Chart(document.getElementById('bookingChart'), {
+    type: 'line',
+    data: {
+        labels: bookingChartData.map(item => item.label),
+        datasets: [{
+            label: 'Bookings',
+            data: bookingChartData.map(item => item.total),
+            borderColor: '#dc3545',
+            backgroundColor: 'rgba(220, 53, 69, 0.12)',
+            tension: 0.35,
+            fill: true
+        }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } } }
+});
+
+new Chart(document.getElementById('revenueChart'), {
+    type: 'bar',
+    data: {
+        labels: revenueChartData.map(item => item.label),
+        datasets: [{
+            label: 'Revenue',
+            data: revenueChartData.map(item => item.revenue),
+            backgroundColor: '#212529'
+        }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } } }
+});
+</script>

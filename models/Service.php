@@ -46,6 +46,19 @@ class Service
         return $this->getBySalonId($salonId, true);
     }
 
+    public function countBySalonId(int $salonId): int
+    {
+        $sql = "SELECT COUNT(*) AS total
+                FROM services
+                WHERE salon_id = :salon_id";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['salon_id' => $salonId]);
+        $row = $stmt->fetch();
+
+        return (int) ($row['total'] ?? 0);
+    }
+
     public function getByCategoryId(int $categoryId, bool $onlyActive = false): array
     {
         $sql = "SELECT * FROM services WHERE category_id = :category_id";

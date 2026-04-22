@@ -6,7 +6,7 @@ function adminReviewStatusBadgeClass(string $status): string
 {
     return match ($status) {
         'published' => 'bg-success',
-        'hidden' => 'bg-secondary',
+        'removed' => 'bg-secondary',
         'flagged' => 'bg-warning text-dark',
         default => 'bg-secondary',
     };
@@ -44,7 +44,7 @@ function adminReviewStatusBadgeClass(string $status): string
                         <select name="status" class="form-select">
                             <option value="">-- Tất cả --</option>
                             <option value="published" <?= ($_GET['status'] ?? '') === 'published' ? 'selected' : '' ?>>published</option>
-                            <option value="hidden" <?= ($_GET['status'] ?? '') === 'hidden' ? 'selected' : '' ?>>hidden</option>
+                            <option value="removed" <?= ($_GET['status'] ?? '') === 'removed' ? 'selected' : '' ?>>removed</option>
                             <option value="flagged" <?= ($_GET['status'] ?? '') === 'flagged' ? 'selected' : '' ?>>flagged</option>
                         </select>
                     </div>
@@ -146,11 +146,11 @@ function adminReviewStatusBadgeClass(string $status): string
                                                 </form>
                                             <?php endif; ?>
 
-                                            <?php if ($review['status'] !== 'hidden'): ?>
-                                                <form method="POST" action="<?= e(BASE_URL . '/admin/reviews') ?>">
+                                            <?php if ($review['status'] !== 'removed'): ?>
+                                                <form method="POST" action="<?= e(BASE_URL . '/admin/reviews') ?>" data-confirm="An review nay khoi trang cong khai?">
                                                     <?= csrfInput() ?>
                                                     <input type="hidden" name="review_id" value="<?= e((string) $review['id']) ?>">
-                                                    <input type="hidden" name="action" value="hidden">
+                                                    <input type="hidden" name="action" value="removed">
                                                     <button type="submit" class="btn btn-sm btn-secondary">Ẩn</button>
                                                 </form>
                                             <?php endif; ?>

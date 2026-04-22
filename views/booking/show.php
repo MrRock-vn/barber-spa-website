@@ -115,7 +115,7 @@ function paymentStatusBadgeClass(string $status): string
                                 <?php endif; ?>
 
                                 <div class="small">
-                                    ⏱ <?= e((string) ($service['duration'] ?? 0)) ?> phút
+                                    <?= e((string) ($service['duration'] ?? 0)) ?> phút
                                 </div>
                             </div>
                         </div>
@@ -127,7 +127,6 @@ function paymentStatusBadgeClass(string $status): string
                 <a href="<?= e(BASE_URL . '/my-bookings') ?>" class="btn btn-dark">Quay lại</a>
 
                 <?php if (($booking['payment_method'] ?? '') === 'online' && ($booking['payment_status'] ?? '') === 'unpaid'): ?>
-                    <a href="<?= e(BASE_URL . '/payment/momo?booking_id=' . $booking['id']) ?>" class="btn btn-danger">Thanh toán MoMo</a>
                     <a href="<?= e(BASE_URL . '/payment/vnpay?booking_id=' . $booking['id']) ?>" class="btn btn-primary">Thanh toán VNPay</a>
                 <?php endif; ?>
 
@@ -137,6 +136,18 @@ function paymentStatusBadgeClass(string $status): string
                         <input type="hidden" name="booking_id" value="<?= e((string) $booking['id']) ?>">
                         <button type="submit" class="btn btn-danger">Hủy lịch</button>
                     </form>
+                <?php endif; ?>
+
+                <?php if (($booking['status'] ?? '') === 'completed'): ?>
+                    <?php if (empty($booking['review_id'])): ?>
+                        <a href="<?= e(BASE_URL . '/write-review?booking_id=' . $booking['id']) ?>" class="btn btn-warning">Viết đánh giá</a>
+                    <?php else: ?>
+                        <a href="<?= e(BASE_URL . '/edit-review/' . $booking['review_id']) ?>" class="btn btn-outline-warning">Sửa đánh giá</a>
+                        <form method="POST" action="<?= e(BASE_URL . '/delete-review/' . $booking['review_id']) ?>" data-confirm="Bạn chắc chắn muốn xóa đánh giá này?">
+                            <?= csrfInput() ?>
+                            <button type="submit" class="btn btn-outline-danger">Xóa đánh giá</button>
+                        </form>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
         </div>

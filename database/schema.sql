@@ -15,6 +15,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS review_reports;
 DROP TABLE IF EXISTS refunds;
 DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS booking_holds;
 DROP TABLE IF EXISTS reviews;
 DROP TABLE IF EXISTS bookings;
 DROP TABLE IF EXISTS staff_day_off;
@@ -289,6 +290,34 @@ CREATE TABLE bookings (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================
+-- TABLE: booking_holds
+-- Temporary slot holds used during booking selection
+-- =============================================
+CREATE TABLE booking_holds (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NULL,
+    session_id VARCHAR(128) NOT NULL,
+    staff_id INT UNSIGNED NOT NULL,
+    service_date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    expires_at DATETIME NOT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_booking_holds_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_booking_holds_staff
+        FOREIGN KEY (staff_id) REFERENCES staff(id)
+        ON DELETE CASCADE,
+
+    UNIQUE KEY uq_booking_holds_session_slot (session_id, staff_id, service_date, start_time),
+    INDEX idx_booking_holds_staff_slot (staff_id, service_date, start_time, end_time),
+    INDEX idx_booking_holds_expires_at (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =============================================
 -- TABLE: payments
 -- gateway_response lưu JSON string
 -- =============================================
@@ -296,7 +325,7 @@ CREATE TABLE payments (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     booking_id INT UNSIGNED NOT NULL,
     user_id INT UNSIGNED NOT NULL,
-    gateway ENUM('vnpay', 'momo', 'cash') NOT NULL,
+    gateway ENUM('vnpay', 'cash') NOT NULL,
     transaction_id VARCHAR(255) NOT NULL,
     amount DECIMAL(12,2) NOT NULL,
     currency VARCHAR(10) NOT NULL DEFAULT 'VND',

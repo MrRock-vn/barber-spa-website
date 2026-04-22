@@ -27,7 +27,7 @@ class UserController
         $user = $this->userModel->findById($userId);
 
         render('user/profile', [
-            'pageTitle' => 'My Profile - ' . APP_NAME,
+            'pageTitle' => 'Hồ sơ cá nhân - ' . APP_NAME,
             'navSection' => 'user',
             'user' => $user,
         ]);
@@ -47,6 +47,11 @@ class UserController
         $user = $this->userModel->findById($userId);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!verifyCsrf()) {
+                flash('error', 'Phiên làm việc không hợp lệ. Vui lòng thử lại.');
+                redirect(BASE_URL . '/edit-profile');
+            }
+
             $data = [
                 'name'     => trim($_POST['name'] ?? ''),
                 'phone'    => trim($_POST['phone'] ?? ''),
@@ -58,12 +63,12 @@ class UserController
 
             $this->userModel->updateProfile($userId, $data);
 
-            header('Location: /barber-spa/my-profile');
-            exit;
+            flash('success', 'Cập nhật hồ sơ thành công.');
+            redirect(BASE_URL . '/my-profile');
         }
 
         render('user/edit-profile', [
-            'pageTitle' => 'Edit Profile - ' . APP_NAME,
+            'pageTitle' => 'Chỉnh sửa hồ sơ - ' . APP_NAME,
             'navSection' => 'user',
             'user' => $user,
         ]);

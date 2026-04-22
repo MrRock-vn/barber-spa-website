@@ -13,6 +13,7 @@ declare(strict_types=1);
                 </div>
                 <div class="auth-card-body">
                     <form method="POST">
+                        <?= csrfInput() ?>
                         <div class="mb-3 auth-form-group">
                             <label class="form-label">Họ và tên</label>
                             <input type="text" name="name" class="form-control auth-form-control"

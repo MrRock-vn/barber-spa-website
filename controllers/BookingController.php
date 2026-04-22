@@ -71,7 +71,12 @@ class BookingController
                 redirect(BASE_URL . '/booking/create?step=2');
             }
 
-            require_once __DIR__ . '/../views/booking/step1-services.php';
+            render('booking/step1-services', [
+                'pageTitle' => 'Đặt lịch - Bước 1',
+                'salon' => $salon,
+                'services' => $services,
+                'wizard' => $wizard,
+            ], 'booking');
             return;
         }
 
@@ -110,7 +115,12 @@ class BookingController
                 redirect(BASE_URL . '/booking/create?step=3');
             }
 
-            require_once __DIR__ . '/../views/booking/step2-staff.php';
+            render('booking/step2-staff', [
+                'pageTitle' => 'Đặt lịch - Bước 2',
+                'salon' => $salon,
+                'staffList' => $staffList,
+                'wizard' => $wizard,
+            ], 'booking');
             return;
         }
 
@@ -166,7 +176,7 @@ class BookingController
                     redirect(BASE_URL . '/booking/create?step=3');
                 }
 
-                if ($this->bookingModel->hasHeldConflict((int) $wizard['staff_id'], $bookingDate, $startTime, $endTime)) {
+                if ($this->bookingModel->hasHeldConflict((int) $wizard['staff_id'], $bookingDate, $startTime, $endTime, null, session_id())) {
                     flash('error', 'Khung giờ đang được giữ tạm. Vui lòng chọn giờ khác.');
                     redirect(BASE_URL . '/booking/create?step=3');
                 }
@@ -178,7 +188,13 @@ class BookingController
                 redirect(BASE_URL . '/booking/create?step=4');
             }
 
-            require_once __DIR__ . '/../views/booking/step3-datetime.php';
+            render('booking/step3-datetime', [
+                'pageTitle' => 'Đặt lịch - Bước 3',
+                'salon' => $salon,
+                'staff' => $staff,
+                'summary' => $summary,
+                'wizard' => $wizard,
+            ], 'booking');
             return;
         }
 
@@ -225,6 +241,7 @@ class BookingController
                     'payment_status' => $paymentMethod === 'online' ? 'unpaid' : 'unpaid',
                     'notes' => $notes,
                     'slot_held_until' => date('Y-m-d H:i:s', strtotime('+10 minutes')),
+                    'hold_session_id' => session_id(),
                 ]);
 
                 if ($bookingId === null) {
@@ -243,7 +260,12 @@ class BookingController
                 redirect(BASE_URL . '/booking/' . $bookingId);
             }
 
-            require_once __DIR__ . '/../views/booking/step4-confirm.php';
+            render('booking/step4-confirm', [
+                'pageTitle' => 'Đặt lịch - Bước 4',
+                'salon' => $salon,
+                'staff' => $staff,
+                'summary' => $summary,
+            ], 'booking');
             return;
         }
 
@@ -275,7 +297,19 @@ class BookingController
 {
     Auth::requireLogin();
 
-    $bookings = $this->bookingModel->getByUserId((int) Auth::id());
+    $status = trim($_GET['status'] ?? '');
+    $keyword = trim($_GET['keyword'] ?? '');
+    $filters = [];
+
+    if ($status !== '') {
+        $filters['status'] = $status;
+    }
+
+    if ($keyword !== '') {
+        $filters['keyword'] = $keyword;
+    }
+
+    $bookings = $this->bookingModel->getByUserId((int) Auth::id(), $filters);
 
     render('booking/my-bookings', [
         'pageTitle' => 'Lịch hẹn của tôi - ' . APP_NAME,

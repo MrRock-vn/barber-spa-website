@@ -225,6 +225,50 @@ class Payment
         return (int) ($row['total'] ?? 0);
     }
 
+    public function countAllPayments(): int
+    {
+        $stmt = $this->db->query("SELECT COUNT(*) AS total FROM payments");
+        $row = $stmt->fetch();
+
+        return (int) ($row['total'] ?? 0);
+    }
+
+    public function getStatusCounts(): array
+    {
+        $sql = "SELECT status, COUNT(*) AS total
+                FROM payments
+                GROUP BY status";
+
+        $stmt = $this->db->query($sql);
+        $counts = ['pending' => 0, 'success' => 0, 'failed' => 0, 'refunded' => 0];
+
+        foreach ($stmt->fetchAll() as $row) {
+            $counts[(string) $row['status']] = (int) $row['total'];
+        }
+
+        return $counts;
+    }
+
+    public function getRecentForAdmin(int $limit = 5): array
+    {
+        $sql = "SELECT p.*,
+                       u.name AS customer_name,
+                       b.booking_date,
+                       s.name AS salon_name
+                FROM payments p
+                LEFT JOIN users u ON u.id = p.user_id
+                LEFT JOIN bookings b ON b.id = p.booking_id
+                LEFT JOIN salons s ON s.id = b.salon_id
+                ORDER BY p.id DESC
+                LIMIT :limit";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
    public function isProcessedTransaction(string $transactionId): bool
 {
     $payment = $this->findByTransactionId($transactionId);

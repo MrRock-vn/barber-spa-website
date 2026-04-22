@@ -162,70 +162,20 @@ class AuthController
                 redirect(BASE_URL . '/register');
             }
 
-            $emailToken = bin2hex(random_bytes(32));
-
+            // Auto-verify email on registration (no email verification required)
             $userId = $this->userModel->create([
                 'name' => $name,
                 'email' => $email,
                 'password' => password_hash($password, PASSWORD_BCRYPT),
                 'role' => 'customer',
                 'is_active' => 1,
-                'email_token' => $emailToken,
+                'email_verified_at' => date('Y-m-d H:i:s'),
+                'email_token' => null,
             ]);
-
-            // Send verification email
-            $verifyLink = BASE_URL . '/verify-email?token=' . urlencode($emailToken);
-
-            $emailBody = '<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
-        .header { background-color: #007bff; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center; }
-        .content { padding: 20px; }
-        .footer { background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px; }
-        .btn { display: inline-block; background-color: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-        .btn:hover { background-color: #0056b3; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>Xác Thực Email - Barber Spa</h2>
-        </div>
-        <div class="content">
-            <p>Xin chào ' . e($name) . ',</p>
-            <p>Cảm ơn bạn đã đăng ký tài khoản Barber Spa. Để hoàn tất đăng ký, vui lòng xác thực email của bạn.</p>
-            <p><a href="' . $verifyLink . '" class="btn">Xác Thực Email</a></p>
-            <p><strong>Hoặc copy liên kết bên dưới:</strong></p>
-            <p><a href="' . $verifyLink . '">' . $verifyLink . '</a></p>
-            <p style="color: #666; font-size: 12px;">Liên kết này sẽ hết hạn sau 24 giờ.</p>
-            <p style="color: #999; font-size: 12px;">Nếu đây không phải yêu cầu của bạn, vui lòng bỏ qua email này.</p>
-        </div>
-        <div class="footer">
-            <p>&copy; 2026 Barber Spa. All rights reserved.</p>
-        </div>
-    </div>
-</body>
-</html>';
-
-
-            $sent = Mailer::send(
-                $email,
-                $name,
-                'Xác thực email - Barber Spa',
-                $emailBody
-            );
 
             unset($_SESSION['old']);
 
-            if ($sent) {
-                flash('success', 'Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản trước khi đăng nhập.');
-            } else {
-                flash('success', 'Đăng ký thành công. Token xác thực email đã được tạo. Vui lòng xác thực email để đăng nhập.');
-            }
+            flash('success', 'Đăng ký thành công. Bạn có thể đăng nhập ngay bây giờ.');
             redirect(BASE_URL . '/login');
         }
     render('auth/register', [

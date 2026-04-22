@@ -44,9 +44,9 @@ class SearchController
         $city = trim($_GET['city'] ?? '');
         $district = trim($_GET['district'] ?? '');
         $categoryId = trim($_GET['category_id'] ?? '');
-        $rating = trim($_GET['rating'] ?? '');
-        $minPrice = trim($_GET['min_price'] ?? '');
-        $maxPrice = trim($_GET['max_price'] ?? '');
+        $rating = trim($_GET['rating'] ?? ($_GET['min_rating'] ?? ''));
+        $minPrice = trim($_GET['min_price'] ?? ($_GET['price_from'] ?? ''));
+        $maxPrice = trim($_GET['max_price'] ?? ($_GET['price_to'] ?? ''));
         $sort = trim($_GET['sort'] ?? 'rating_desc');
         $page = max(1, (int) ($_GET['page'] ?? 1));
         $perPage = 6;
@@ -95,10 +95,13 @@ class SearchController
     $images = $this->salonModel->getImages($id);
     $services = $this->serviceModel->getActiveBySalonId($id);
     $staff = $this->staffModel->getActiveBySalonId($id);
+    $reviewRating = trim($_GET['review_rating'] ?? '');
     $reviews = $this->reviewModel->getPublishedBySalonId($id, [
         'limit' => 20,
         'offset' => 0,
+        'rating' => $reviewRating,
     ]);
+    $ratingDistribution = $this->reviewModel->getRatingDistributionBySalonId($id);
 
     render('search/salon-detail', [
     'pageTitle' => $salon['name'] . ' - ' . APP_NAME,
@@ -108,6 +111,7 @@ class SearchController
     'services' => $services,
     'staffList' => $staff,
     'reviews' => $reviews,
+    'ratingDistribution' => $ratingDistribution,
 ]);
 }
 }
