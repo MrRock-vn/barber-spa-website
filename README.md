@@ -1,55 +1,50 @@
-# 💈 Barber Spa - Website Đặt Lịch Cắt Tóc & Làm Đẹp
+# 💈 Barber Spa - Website Đặt Lịch Salon / Barber Trực Tuyến
 
-> **Đồ án / bài tập lớn Lập trình Web nâng cao**  
-> Xây dựng hệ thống website cho phép khách hàng tìm kiếm salon/barber, đặt lịch hẹn, thanh toán và quản lý lịch làm đẹp trực tuyến.
-
----
+Đồ án / bài tập lớn Lập trình Web  
+Xây dựng hệ thống website cho phép khách hàng tìm kiếm salon, đặt lịch dịch vụ, thanh toán, đánh giá và quản lý lịch hẹn trực tuyến.
 
 ## 👥 Thành viên nhóm
 
-| STT | Họ và tên        | MSSV        | Vai trò     |
-| --- | ---------------- | ----------- | ----------- |
-| 1   | Nguyễn Công Sơn  | 23810310102 | Nhóm trưởng |
-| 2   | Nguyễn Văn Quang | 23810310108 | Thành viên  |
-| 3   | Nguyễn Văn Danh  | 23810310136 | Thành viên  |
+| STT | Họ và tên          | MSSV          | Vai trò     |
+| --- | ------------------ | ------------- | ----------- |
+| 1   | [Nguyễn Công Sơn]  | [23810310102] | Nhóm trưởng |
+| 2   | [Nguyễn Văn Quang] | [23810310108] | Thành viên  |
+| 3   | [Nguyễn Văn Danh]  | [23810310136] | Thành viên  |
 
----
+## 🎯 Giới thiệu
 
-Hệ thống hỗ trợ 3 vai trò chính:
+Barber Spa là nền tảng đặt lịch salon/barber trực tuyến, kết nối khách hàng với các salon có dịch vụ cắt tóc, gội đầu, massage, chăm sóc da và làm đẹp. Hệ thống hỗ trợ 3 vai trò chính:
 
-- **Khách hàng (User/Customer):** tìm kiếm salon, xem dịch vụ, đặt lịch, thanh toán, theo dõi lịch hẹn
-- **Chủ salon (Owner):** quản lý salon, dịch vụ, nhân viên, lịch làm việc, booking, doanh thu
-- **Quản trị viên (Admin):** quản lý users, salons, categories, bookings, reviews và giám sát toàn hệ thống
-
----
+- **Khách hàng (Customer):** tìm kiếm salon, xem dịch vụ, đặt lịch, thanh toán, theo dõi booking, viết review.
+- **Chủ salon (Owner):** quản lý salon, nhân viên, dịch vụ, lịch hẹn, doanh thu và review của salon mình.
+- **Quản trị viên (Admin):** quản lý người dùng, salon, danh mục, booking, payment, review và dashboard toàn hệ thống.
 
 ## 🚀 Công nghệ sử dụng
 
-| Thành phần | Công nghệ                                                |
-| ---------- | -------------------------------------------------------- |
-| Frontend   | HTML, CSS, JavaScript, Bootstrap 5                       |
-| Backend    | PHP 8 thuần theo mô hình MVC                             |
-| Database   | MySQL / MariaDB                                          |
-| Web server | Apache (XAMPP)                                           |
-| Thanh toán | Payment giả lập local, có cấu trúc để mở rộng VNPay|
-
----
+| Thành phần | Công nghệ                             |
+| ---------- | ------------------------------------- |
+| Frontend   | HTML5, CSS3, JavaScript, Bootstrap 5  |
+| Backend    | PHP 8 thuần theo mô hình MVC          |
+| Database   | MySQL / MariaDB                       |
+| Web server | Apache (XAMPP)                        |
+| UI / Chart | Bootstrap 5 CDN, Chart.js             |
+| Auth       | PHP Sessions, bcrypt password hashing |
+| Payment    | VNPay Sandbox                         |
+| Mail       | PHPMailer / SMTP                      |
 
 ## 📋 Tài liệu Đặc tả Yêu cầu Phần mềm (SRS)
 
-Các tài liệu SRS được lưu trong thư mục [`/docs/srs/`](./docs/srs/)
+Các tài liệu SRS được lưu trong thư mục `docs/srs/`.
 
-| Mã        | Chức năng                 | Tài liệu                                                      | Trạng thái |
-| --------- | ------------------------- | ------------------------------------------------------------- | ---------- |
-| AUTH-01   | Xác thực người dùng       | [SRS_AUTH.md](./docs/srs/SRS_AUTH.md)                         | ✅         |
-| SEARCH-01 | Tìm kiếm & khám phá salon | [SRS_SEARCH.md](./docs/srs/SRS_SEARCH.md)                     | ✅         |
-| BOOK-01   | Đặt lịch hẹn              | [SRS_BOOKING.md](./docs/srs/SRS_BOOKING.md)                   | ✅         |
-| PAY-01    | Thanh toán                | [SRS_PAYMENT.md](./docs/srs/SRS_PAYMENT.md)                   | ✅         |
-| SALON-01  | Quản lý salon             | [SRS_SALON_MANAGEMENT.md](./docs/srs/SRS_SALON_MANAGEMENT.md) | ✅         |
-| REVIEW-01 | Đánh giá & review         | [SRS_REVIEW.md](./docs/srs/SRS_REVIEW.md)                     | ✅         |
-| ADMIN-01  | Quản trị hệ thống         | [SRS_ADMIN.md](./docs/srs/SRS_ADMIN.md)                       | ✅         |
-
----
+| Mã         | Chức năng                       | Tài liệu                           | Trạng thái |
+| ---------- | ------------------------------- | ---------------------------------- | ---------- |
+| AUTH-01    | Xác thực người dùng             | `docs/srs/SRS_AUTH.md`             | ✅         |
+| SEARCH-01  | Tìm kiếm & khám phá salon       | `docs/srs/SRS_SEARCH.md`           | ✅         |
+| BOOKING-01 | Đặt lịch dịch vụ                | `docs/srs/SRS_BOOKING.md`          | ✅         |
+| PAYMENT-01 | Thanh toán                      | `docs/srs/SRS_PAYMENT.md`          | ✅         |
+| REVIEW-01  | Đánh giá & kiểm duyệt review    | `docs/srs/SRS_REVIEW.md`           | ✅         |
+| SALON-01   | Quản lý salon / staff / service | `docs/srs/SRS_SALON_MANAGEMENT.md` | ✅         |
+| ADMIN-01   | Quản trị hệ thống               | `docs/srs/SRS_ADMIN.md`            | ✅         |
 
 ## 🗂️ Cấu trúc thư mục dự án
 
@@ -66,14 +61,8 @@ barber-spa/
 ├── config/
 │   ├── db.php
 │   ├── mail.php
-│   ├── vnpay.php         [NEW] Cấu hình VNPay payment
+│   └── vnpay.php
 ├── controllers/
-│   ├── AuthController.php
-│   ├── BookingController.php
-│   ├── PaymentController.php
-│   ├── ReviewController.php
-│   ├── SearchController.php
-│   ├── UserController.php
 │   ├── admin/
 │   │   ├── BookingController.php
 │   │   ├── CategoryController.php
@@ -81,658 +70,531 @@ barber-spa/
 │   │   ├── ReviewController.php
 │   │   ├── SalonController.php
 │   │   └── UserController.php
-│   └── owner/
-│       ├── BookingController.php
-│       ├── DashboardController.php
-│       ├── RevenueController.php
-│       ├── ReviewController.php
-│       ├── SalonController.php
-│       ├── ServiceController.php
-│       └── StaffController.php
+│   ├── owner/
+│   │   ├── BookingController.php
+│   │   ├── DashboardController.php
+│   │   ├── ReviewController.php
+│   │   ├── RevenueController.php
+│   │   ├── SalonController.php
+│   │   ├── ServiceController.php
+│   │   └── StaffController.php
+│   ├── AuthController.php
+│   ├── BookingController.php
+│   ├── PaymentController.php
+│   ├── ReviewController.php
+│   ├── SearchController.php
+│   └── UserController.php
 ├── core/
 │   ├── Auth.php
 │   ├── Database.php
-│   ├── helpers.php
-│   └── Mailer.php
+│   ├── Mailer.php
+│   └── helpers.php
 ├── database/
-│   └── schema.sql
+│   ├── add-booking-holds.sql
+│   ├── schema.sql
+│   └── setup-data.sql
 ├── docs/
+│   ├── PROJECT_REPORT.md
+│   ├── VIVA_QA.md
 │   └── srs/
-│       ├── SRS_ADMIN.md
-│       ├── SRS_AUTH.md
-│       ├── SRS_BOOKING.md
-│       ├── SRS_PAYMENT.md
-│       ├── SRS_REVIEW.md
-│       ├── SRS_SALON_MANAGEMENT.md
-│       └── SRS_SEARCH.md
 ├── models/
 │   ├── Booking.php
 │   ├── Category.php
 │   ├── Payment.php
-│   ├── Refund.php
 │   ├── Review.php
 │   ├── Salon.php
 │   ├── Service.php
 │   ├── Staff.php
 │   └── User.php
 ├── public/
-│   ├── css/
-│   │   └── style.css
-│   ├── images/
-│   ├── js/
-│   └── uploads/
-│       ├── avatars/
-│       ├── reviews/
-│       ├── salons/
-│       └── services/
+│   └── css/
+│       └── style.css
 ├── views/
 │   ├── admin/
-│   │   ├── bookings/
-│   │   ├── categories/
-│   │   ├── dashboard/
-│   │   ├── reviews/
-│   │   ├── salons/
-│   │   └── users/
 │   ├── auth/
 │   ├── booking/
-│   ├── errors/
 │   ├── layouts/
 │   ├── owner/
-│   │   ├── bookings/
-│   │   ├── dashboard/
-│   │   ├── revenue/
-│   │   ├── services/
-│   │   └── staff/
 │   ├── payment/
 │   ├── review/
 │   ├── search/
 │   └── user/
+├── .env.example
 ├── .htaccess
 ├── composer.json
+├── DEMO_SCRIPT.md
+├── INSTALL.md
+├── SECURITY.md
 ├── index.php
-├── setup-data.sql              [NEW] Import 4 salon + 3 owner + 9 dịch vụ (hợp nhất)
-├── reset-admin-password.php    [NEW] Reset mật khẩu admin
-├── reset-owner-password.php    [NEW] Reset mật khẩu owner
-├── DECUONG.md
 └── README.md
 ```
 
-✨ Chức năng chính của hệ thống
+## ✨ Chức năng chính của hệ thống
 
-## 1. Khách hàng (User / Customer)
+### 1. Khách hàng (Customer)
 
-### 🔐 Xác thực & tài khoản
-- Đăng ký  
-- Đăng nhập  
-- Đăng xuất  
-- Quên mật khẩu / đặt lại mật khẩu  
+- Đăng ký, đăng nhập, đăng xuất.
+- Quên mật khẩu / đặt lại mật khẩu.
+- Quản lý hồ sơ cá nhân.
+- Tìm kiếm salon theo từ khóa, khu vực, dịch vụ.
+- Autocomplete gợi ý salon / dịch vụ theo thời gian thực.
+- Xem chi tiết salon, dịch vụ, nhân viên, rating và review.
+- Đặt lịch theo 4 bước:
+  - Chọn dịch vụ.
+  - Chọn nhân viên.
+  - Chọn ngày giờ.
+  - Xác nhận booking.
+- Hệ thống giữ slot tạm 10 phút khi chọn giờ.
+- Không cho đặt lịch quá khứ, trùng slot hoặc staff không thuộc salon.
+- Thanh toán online qua VNPay sandbox hoặc thanh toán tại quầy.
+- Xem My Bookings, tìm kiếm/filter booking theo trạng thái.
+- Hủy lịch khi còn hợp lệ.
+- Viết/sửa/xóa review sau khi booking completed.
+- Report review vi phạm.
 
-### 🔎 Tìm kiếm & khám phá
-- Tìm kiếm salon theo:
-  - Từ khóa  
-  - Khu vực  
-  - Danh mục  
-- Xem chi tiết salon  
-- Xem danh sách dịch vụ và nhân viên  
+### 2. Chủ salon (Owner)
 
-### 📅 Đặt lịch & quản lý lịch
-- Đặt lịch hẹn (quy trình nhiều bước)  
-- Xem danh sách lịch hẹn của tôi  
-- Xem chi tiết booking  
-- Hủy lịch hẹn (khi còn hiệu lực)  
+- Dashboard tổng quan: booking, doanh thu, nhân viên, dịch vụ, rating, review.
+- Biểu đồ booking 7 ngày gần nhất.
+- Biểu đồ doanh thu 6 tháng.
+- Xem khung giờ đông khách, nhân viên được đặt nhiều, dịch vụ được chọn nhiều.
+- Quản lý booking: xác nhận, hoàn thành, hủy.
+- Quản lý dịch vụ.
+- Quản lý nhân viên, lịch làm việc và ngày nghỉ.
+- Xem review salon mình.
+- Phản hồi review của khách hàng.
+- Xem doanh thu theo khoảng thời gian.
 
-### 💳 Thanh toán
-- Thanh toán (local giả lập cho booking online)  
+### 3. Quản trị viên (Admin)
 
----
+- Dashboard tổng quan hệ thống.
+- Quản lý users: khóa/mở tài khoản.
+- Quản lý salons: duyệt, ẩn, mở lại, xóa mềm.
+- Quản lý categories.
+- Quản lý bookings.
+- Quản lý reviews: publish, flag, remove.
+- Xem thống kê:
+  - tổng user, salon, booking, revenue
+  - payment success
+  - tổng review / flagged review
+  - top salon nhiều booking
+  - top dịch vụ được đặt nhiều
+  - biểu đồ booking và doanh thu
 
-## 2. Chủ salon (Owner)
+## ⭐ Tính năng nổi bật
 
-### 📊 Dashboard & thống kê
-- Xem dashboard thống kê salon  
-- Xem doanh thu  
-
-### 📅 Quản lý booking
-- Quản lý booking của salon  
-
-### 💼 Quản lý vận hành
-- Quản lý dịch vụ  
-- Quản lý nhân viên  
-
-### 🗓️ Quản lý lịch làm việc
-- Quản lý lịch làm việc theo tuần  
-- Quản lý ngày nghỉ riêng của nhân viên  
-
----
-
-## 3. Quản trị viên (Admin)
-
-### 📊 Dashboard hệ thống
-- Dashboard tổng quan hệ thống  
-
-### ⚙️ Quản lý dữ liệu
-- Quản lý users  
-- Quản lý salons  
-- Quản lý categories  
-- Quản lý bookings
----
+- **Hold slot 10 phút:** tránh hai khách đặt cùng một khung giờ.
+- **Staff schedule/day off:** chỉ hiển thị slot hợp lệ theo lịch làm việc nhân viên.
+- **Review moderation:** report review, owner reply, admin publish/flag/remove.
+- **Verified review:** review gắn với booking đã completed.
+- **Dashboard thật:** dùng dữ liệu MySQL và Chart.js.
+- **Autocomplete API:** gợi ý salon/dịch vụ realtime.
+- **Payment guard:** không cho thanh toán lại booking đã paid.
 
 ## ⚙️ Hướng dẫn cài đặt và chạy dự án
 
 ### 1️⃣ Yêu cầu môi trường
 
-- **XAMPP** (hoặc Apache + MySQL riêng biệt)
-- **PHP 8.0+**
-- **MySQL / MariaDB 5.7+**
-- **Trình duyệt web** (Chrome, Firefox, Edge, v.v.)
-- **phpMyAdmin** (thường có sẵn trong XAMPP)
+- XAMPP hoặc Apache + MySQL riêng biệt.
+- PHP 8.0+.
+- MySQL 8.0+ / MariaDB 10.x+.
+- Composer.
+- Trình duyệt web: Chrome, Edge, Firefox.
+- phpMyAdmin nếu dùng XAMPP.
 
 ### 2️⃣ Đưa project vào htdocs
 
-1. **Nén dự án** hoặc sử dụng Git clone:
+Clone hoặc copy dự án vào:
 
-```bash
-git clone <repo-url> C:\aiu\htdocs\barber-spa
-```
-
-2. **Hoặc copy thủ công vào:**
-
-```
+```text
 C:\xampp\htdocs\barber-spa
 ```
 
-### 3️⃣ Khởi động dịch vụ XAMPP
+Hoặc theo môi trường hiện tại:
 
-1. Mở **XAMPP Control Panel**
-2. Click **Start** cho:
-   - ✅ **Apache**
-   - ✅ **MySQL**
-
-### 4️⃣ Tạo Database & Import Dữ Liệu
-
-#### **Cách 1: phpMyAdmin (Dễ nhất)**
-
-1. Truy cập: http://localhost/phpmyadmin
-2. Click **Databases** → tạo database mới:
-   - **Name:** `barber_spa`
-   - **Collation:** `utf8mb4_unicode_ci`
-3. Chọn database vừa tạo
-4. Tab **Import** → chọn file `database/schema.sql` → **Import**
-
-#### **Cách 2: MySQL CLI**
-
-```bash
-mysql -u root -p < database/schema.sql
+```text
+c:\aiu\htdocs\barber-spa
 ```
 
-### 5️⃣ Cấu hình Kết nối Database
+### 3️⃣ Khởi động dịch vụ
 
-Mở file `config/db.php` và cập nhật:
+Mở XAMPP Control Panel và bật:
 
-```php
-<?php
-define('DB_HOST', '127.0.0.1');      // Địa chỉ MySQL
-define('DB_NAME', 'barber_spa');      // Tên database
-define('DB_USER', 'root');            // User MySQL
-define('DB_PASS', '');                // Password MySQL (để trống nếu không có)
-define('DB_PORT', 3306);              // Port MySQL
-define('DB_CHARSET', 'utf8mb4');      // Charset
-```
+- ✅ Apache
+- ✅ MySQL
 
-### 6️⃣ Khởi chạy ứng dụng
-
-1. Mở trình duyệt: **http://localhost/barber-spa**
-2. Nếu thấy **404**, kiểm tra:
-   - Apache đã start?
-   - File `index.php` có tồn tại?
-   - `.htaccess` có bị chặn?
-
-### 7️⃣ (Tuỳ chọn) Import Dữ Liệu Mở Rộng
-
-Để thêm 4 salon, 3 owner mới và 9 dịch vụ, import file `setup-data.sql`:
+### 4️⃣ Cài dependency
 
 ```bash
-# Import qua MySQL CLI
-mysql -u root -p barber_spa < setup-data.sql
+composer install
 ```
 
-**Hoặc qua phpMyAdmin:**
+### 5️⃣ Tạo database & import dữ liệu
 
-1. Chọn database `barber_spa`
-2. Tab **Import** → chọn file `setup-data.sql`
-3. Click **Import**
+#### Cách 1: phpMyAdmin
 
-**Dữ liệu được thêm vào:**
+1. Truy cập:
 
-- 3 owner mới (owner2@gmail.com, owner3@gmail.com, owner4@gmail.com)
-- 4 salon mới (Hair Studio, Beauty Palace, Barbershop, Aesthetic Clinic)
-- 9 dịch vụ mới cho các salon
-
-Tất cả mật khẩu owner: **Owner@123**
-
-### 8️⃣ (Tuỳ chọn) Reset Mật Khẩu Test
-
-Nếu quên mật khẩu test, chạy script:
-
-```bash
-# Reset admin password → Admin@123
-php reset-admin-password.php
-
-# Reset owner password → Owner@123
-php reset-owner-password.php
+```text
+http://localhost/phpmyadmin
 ```
 
-**Sau khi dùng xong, xóa 2 file này để bảo mật!**
+2. Tạo database:
 
-**📝 Ghi chú:**
+```text
+barber_spa
+```
 
-- File `add-salons.sql` và `add-services.sql` đã được thay thế bằng `setup-data.sql` (hợp nhất)
-- Bạn có thể xóa 2 file cũ nếu không cần dùng nữa
+Collation:
 
----
+```text
+utf8mb4_unicode_ci
+```
 
-### 9️⃣ (Bắt buộc) Cấu Hình File .env
+3. Chọn database vừa tạo.
+4. Tab Import → chọn file:
 
-Tạo hoặc cập nhật file `.env` tại thư mục gốc:
+```text
+database/schema.sql
+hoặc chọn thêm các database nữa trong bảng database để chạy dữ liệu
+```
 
-```bash
-# Application
+5. Bấm Import.
+
+#### Cách 2: MySQL CLI
+
+```sql
+CREATE DATABASE barber_spa CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE barber_spa;
+SOURCE database/schema.sql;
+```
+
+Nếu database cũ chưa có bảng giữ slot:
+
+```sql
+SOURCE database/add-booking-holds.sql;
+```
+
+### 6️⃣ Cấu hình `.env`
+
+Copy `.env.example` thành `.env` và kiểm tra:
+
+```env
 APP_URL=http://localhost/barber-spa
-APP_ENV=development
-APP_DEBUG=true
-
-# Database Configuration
 DB_HOST=localhost
 DB_PORT=3306
 DB_NAME=barber_spa
 DB_USER=root
 DB_PASS=
-
-# Mail Configuration (Gmail SMTP)
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME=your-email@gmail.com
-MAIL_PASSWORD=your-app-password
-MAIL_FROM_EMAIL=your-email@gmail.com
-MAIL_FROM_NAME=Barber Spa
-
-# VNPay Configuration
-VNPAY_VERSION=2.1.0
-VNPAY_TMN_CODE=your-tmn-code
-VNPAY_HASH_SECRET=your-hash-secret
-VNPAY_PAY_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-VNPAY_RETURN_URL=http://localhost/barber-spa/payment/vnpay-return
-VNPAY_IPN_URL=http://localhost/barber-spa/payment/vnpay-ipn
-
 ```
 
-**Hướng dẫn chi tiết:**
+Nếu dùng VNPay sandbox, cập nhật thêm các biến gateway trong `.env`.
 
-**Gmail SMTP (Để gửi email xác thực):**
+### 7️⃣ Khởi chạy ứng dụng
 
-1. Bật 2FA trên Google Account: https://myaccount.google.com
-2. Tạo App Password: https://myaccount.google.com/apppasswords
-3. Copy app password vào `MAIL_PASSWORD`
+Mở trình duyệt:
 
-**VNPay (Để thanh toán):**
-
-1. Đăng ký sandbox tại: https://sandbox.vnpayment.vn
-2. Lấy `VNPAY_TMN_CODE` và `VNPAY_HASH_SECRET` từ tài khoản
-3. Cập nhật vào `.env`
-
----
-
-### 🔟 (Tuỳ chọn) Cấu Hình Thêm
-
-**Nếu sử dụng database khác:**
-
-1. Cập nhật `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASS` trong `.env`
-2. Tạo database mới và import `database/schema.sql`
-
----
-
-## 📝 Changelog - Phiên Bản Mới
-
-### ✅ Các Fix & Cải Tiến
-
-**Security Fixes (Sửa lỗ hổng bảo mật):**
-
-- ✅ SQL Injection prevention - dùng prepared statements
-- ✅ CSRF protection - thêm token validation
-- ✅ Authentication bypass - kiểm tra quyền trước mỗi action
-- ✅ Payment ownership check - verify user sở hữu booking
-- ✅ Password reset token validation - token phải hợp lệ
-- ✅ Email verification - mã xác thực phải đúng
-- ✅ Payment status validation - kiểm tra trạng thái hợp lệ
-- ✅ Double booking prevention - không cho đặt lịch trùng lặp
-- ✅ Timing attack prevention - dùng hash_equals() thay vì ==
-
-**Features (Tính năng mới):**
-
-- ✅ Email verification system - xác thực email đăng ký
-- ✅ Gmail SMTP integration - gửi email thực qua Gmail
-- ✅ VNPay payment - thanh toán online VNPay sandbox
-- ✅ Custom Mailer class - gửi email không cần PHPMailer
-- ✅ Remember me functionality - "Ghi nhớ đăng nhập"
-- ✅ Password reset flow - quên mật khẩu → reset qua email
-- ✅ Admin password reset script - reset mật khẩu admin
-- ✅ Environment configuration - dùng `.env` thay hardcode
-
-**Improvements (Cải tiến):**
-
-- ✅ Code refactoring - tổng hợp configuration
-- ✅ Error logging - log chi tiết lỗi VNPay, Database
-- ✅ Helper functions - thêm hàm tiện ích (e(), env(), etc)
-- ✅ Better error messages - thông báo lỗi chi tiết hơn
-
----
-
-## 🧪 Hướng Dẫn Test Hoàn Chỉnh
-
-### Test User Flow (Khách hàng)
-
-**1. Đăng ký tài khoản mới:**
-
-```
-URL: http://localhost/barber-spa/register
-Email: test@example.com
-Password: Test@123
-→ Nhập mã xác thực từ email (check Gmail)
-→ Xác thực thành công, redirect login
+```text
+http://localhost/barber-spa
 ```
 
-**2. Đăng nhập:**
+Nếu thấy 404, kiểm tra:
 
-```
-URL: http://localhost/barber-spa/login
-Email: test@example.com
-Password: Test@123
-→ Login thành công
-```
+- Apache đã start chưa?
+- Project có đúng trong `htdocs/barber-spa` không?
+- `.htaccess` có tồn tại không?
+- `APP_URL` có đúng không?
 
-**3. Quên mật khẩu (Password Reset):**
+## 🔐 Tài khoản test
 
-```
-URL: http://localhost/barber-spa/forgot-password
-Email: test@example.com
-→ Kiểm tra email, click link reset
-→ Nhập mật khẩu mới
-→ Reset thành công, đăng nhập lại
-```
+| Vai trò  | Email                | Mật khẩu       | Ghi chú           |
+| -------- | -------------------- | -------------- | ----------------- |
+| Admin    | `admin@barberspa.vn` | `Admin@123`    | Quản trị hệ thống |
+| Owner    | `owner1@gmail.com`   | `Owner@123`    | Chủ salon         |
+| Customer | `an@gmail.com`       | `Customer@123` | Khách hàng test   |
 
-**4. Tìm kiếm & Đặt lịch:**
+⚠️ Nếu đăng nhập sai quá 5 lần, tài khoản sẽ bị khóa tạm 30 phút.
 
-```
-URL: http://localhost/barber-spa (Trang chủ)
-→ Tìm kiếm salon (bằng từ khóa, khu vực, danh mục)
-→ Chọn salon → Xem chi tiết
-→ Bấm "Đặt lịch" → Chọn dịch vụ, nhân viên, thời gian
-→ Confirm booking
+## 🧪 Hướng dẫn test hoàn chỉnh
+
+### Test Customer Flow
+
+1. Vào trang chủ:
+
+```text
+http://localhost/barber-spa
 ```
 
-**5. Thanh toán:**
+2. Tìm kiếm salon:
 
+- Gõ `bar` vào ô tìm kiếm.
+- Kiểm tra dropdown autocomplete.
+- Chọn salon hoặc bấm tìm kiếm.
+
+3. Xem chi tiết salon:
+
+- Xem thông tin salon.
+- Xem dịch vụ.
+- Xem nhân viên.
+- Xem rating và review.
+- Lọc review theo số sao.
+
+4. Đăng nhập customer:
+
+```text
+Email: an@gmail.com
+Password: Customer@123
 ```
-URL: http://localhost/barber-spa/my-bookings
-→ Chọn booking → Xem chi tiết
-→ Click "Thanh toán"
-→ Chọn "Thanh toán tại quầy" hoặc "VNPay"
-→ Confirm payment
-```
 
-### Test Owner Flow (Chủ salon)
+5. Đặt lịch:
 
-**1. Đăng nhập:**
+- Chọn dịch vụ.
+- Chọn nhân viên.
+- Chọn ngày từ ngày mai trở đi.
+- Chọn giờ.
+- Hệ thống giữ slot 10 phút.
+- Xác nhận booking.
 
-```
+6. Thanh toán:
+
+- Nếu chọn online: thanh toán VNPay sandbox.
+- Nếu chọn tại quầy: xác nhận thanh toán tại quầy.
+
+7. My Bookings:
+
+- Xem danh sách booking.
+- Lọc theo trạng thái.
+- Tìm theo mã booking / salon / nhân viên.
+- Hủy booking nếu còn hợp lệ.
+
+8. Review:
+
+- Với booking đã completed, bấm viết đánh giá.
+- Gửi rating 1-5 sao.
+- Sửa hoặc xóa review của chính mình.
+- Report review của người khác.
+
+### Test Owner Flow
+
+1. Đăng nhập owner:
+
+```text
 Email: owner1@gmail.com
 Password: Owner@123
-URL: http://localhost/barber-spa/owner/dashboard
 ```
 
-**2. Quản lý Salon:**
+2. Vào Owner Dashboard:
 
-```
-Menu → Quản lý salon
-→ Cập nhật thông tin, mô tả, hình ảnh
-→ Lưu thay đổi
-```
+- Xem tổng booking, doanh thu, staff, service, rating, review.
+- Xem biểu đồ booking 7 ngày.
+- Xem biểu đồ doanh thu 6 tháng.
+- Xem khung giờ đông khách.
+- Xem nhân viên/dịch vụ được đặt nhiều.
 
-**3. Quản lý Dịch vụ:**
+3. Quản lý Booking:
 
-```
-Menu → Quản lý dịch vụ
-→ Thêm/sửa/xóa dịch vụ
-→ Cập nhật giá, thời gian, mô tả
-```
+- Vào Owner Bookings.
+- Xác nhận booking.
+- Hoàn thành booking.
+- Hủy booking nếu cần.
 
-**4. Quản lý Nhân viên:**
+4. Quản lý Staff:
 
-```
-Menu → Quản lý nhân viên
-→ Thêm/sửa/xóa nhân viên
-→ Cập nhật lịch làm việc
-```
+- Thêm/sửa/xóa nhân viên.
+- Cập nhật lịch làm việc.
+- Thêm ngày nghỉ.
 
-**5. Xem Booking & Doanh thu:**
+5. Quản lý Service:
 
-```
-Menu → Quản lý booking
-→ Xem danh sách booking, confirm/hoàn thành
-Menu → Doanh thu
-→ Xem báo cáo, thống kê
-```
+- Thêm/sửa/xóa dịch vụ.
+- Bật/tắt trạng thái dịch vụ.
 
-### Test Admin Flow (Quản trị viên)
+6. Quản lý Review:
 
-**1. Đăng nhập:**
+- Vào Owner Reviews.
+- Xem review của salon.
+- Phản hồi review.
 
-```
+### Test Admin Flow
+
+1. Đăng nhập admin:
+
+```text
 Email: admin@barberspa.vn
 Password: Admin@123
-URL: http://localhost/barber-spa/admin/dashboard
 ```
 
-**2. Quản lý Users:**
+2. Vào Admin Dashboard:
 
-```
-Menu → Quản lý users
-→ Xem danh sách, khóa/mở khóa user
-→ Xóa user nếu cần
-```
+- Xem tổng users, salons, bookings, revenue.
+- Xem payment success.
+- Xem review / flagged review.
+- Xem biểu đồ booking và doanh thu.
+- Xem top salon và top dịch vụ.
 
-**3. Quản lý Salons:**
+3. Quản lý Users:
 
-```
-Menu → Quản lý salons
-→ Duyệt salon từ owner mới
-→ Ẩn/hiện salon, xóa nếu vi phạm
-```
+- Xem danh sách user.
+- Khóa / mở khóa tài khoản.
 
-**4. Quản lý Categories:**
+4. Quản lý Salons:
 
-```
-Menu → Quản lý categories
-→ Thêm/sửa/xóa danh mục dịch vụ
-```
+- Duyệt salon.
+- Ẩn salon.
+- Mở lại salon.
+- Xóa mềm salon.
 
-**5. Xem Thống kê:**
+5. Quản lý Categories:
 
-```
-Dashboard
-→ Xem KPI: tổng users, salons, bookings, revenue
-→ Biểu đồ doanh thu theo thời gian
-```
+- Thêm/sửa/xóa danh mục.
 
----
+6. Quản lý Bookings:
+
+- Xác nhận booking.
+- Hoàn thành booking.
+- Hủy booking.
+
+7. Quản lý Reviews:
+
+- Publish review.
+- Flag review.
+- Remove review vi phạm.
 
 ## 🐛 Troubleshooting
 
-**Lỗi: Cannot connect to database**
+### Lỗi: Cannot connect to database
 
-```
-→ Kiểm tra MySQL đã start
-→ Kiểm tra DB_HOST, DB_USER, DB_PASS trong .env
-→ Kiểm tra database `barber_spa` đã tạo
-```
+- Kiểm tra MySQL đã start.
+- Kiểm tra `.env`: `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`.
+- Kiểm tra database `barber_spa` đã tạo.
+- Kiểm tra đã import `database/schema.sql`.
 
-**Lỗi: Email không gửi được**
+### Lỗi: 404 Not Found
 
-```
-→ Kiểm tra MAIL_USERNAME, MAIL_PASSWORD trong .env
-→ Kiểm tra Gmail đã bật 2FA
-→ Kiểm tra App Password có đúng không
-→ Kiểm tra firewall/antivirus có chặn port 587
-```
+- Kiểm tra Apache đã start.
+- Kiểm tra URL đúng:
 
-**Lỗi: VNPay signature failed**
-
-```
-→ Kiểm tra VNPAY_TMN_CODE, VNPAY_HASH_SECRET
-→ Copy chính xác từ portal (không có khoảng trắng)
-→ Kiểm tra VNPAY_RETURN_URL có đúng không
+```text
+http://localhost/barber-spa
 ```
 
-**Lỗi: 404 Not Found**
+- Kiểm tra project nằm đúng trong `htdocs/barber-spa`.
+- Kiểm tra `.htaccess` tồn tại.
 
-```
-→ Kiểm tra Apache đã start
-→ Kiểm tra .htaccess file có tồn tại
-→ Kiểm tra URL có đúng (ví dụ: http://localhost/barber-spa/login)
-→ Kiểm tra APP_URL trong .env đúng với domain
-```
+### Lỗi: không có slot giờ hẹn
 
----
+- Chọn ngày từ ngày mai trở đi.
+- Kiểm tra nhân viên có lịch làm việc trong ngày đó.
+- Kiểm tra nhân viên không bị day off.
+- Kiểm tra slot chưa bị booking hoặc hold.
+- Nếu test nhiều lần, xóa hold hết hạn trong bảng `booking_holds`.
 
-## 📧 Liên Hệ & Support
+### Lỗi: không đăng nhập được
 
-Nếu gặp vấn đề:
+- Dùng đúng tài khoản test trong README.
+- Kiểm tra `email_verified_at` không bị null.
+- Nếu nhập sai quá 5 lần, tài khoản bị khóa tạm 30 phút.
+- Có thể reset bằng admin panel hoặc cập nhật `login_attempts = 0`, `locked_until = NULL`.
 
-- 📧 Email: support@barber-spa.local
-- 💬 Facebook: [Link Facebook]
-- 📞 Phone: 0123-456-789
+### Lỗi: thanh toán sandbox
 
----
+- Kiểm tra `.env` có cấu hình VNPay sandbox.
+- Kiểm tra return URL đúng `APP_URL`.
+- Không thanh toán lại booking đã `paid`.
+- Booking `cancelled` không được thanh toán.
 
-## 🔐 Tài Khoản Test
+### Lỗi: session không hoạt động
 
-| Vai trò  | Email              | Mật khẩu     | Ghi chú                    |
-| -------- | ------------------ | ------------ | -------------------------- |
-| Admin    | admin@barberspa.vn | Admin@123    | Quản trị hệ thống          |
-| Owner    | owner1@gmail.com   | Owner@123    | Quản lý salon              |
-| Owner    | owner2@gmail.com   | Owner@123    | Salon mới (sau khi import) |
-| Owner    | owner3@gmail.com   | Owner@123    | Salon mới (sau khi import) |
-| Owner    | owner4@gmail.com   | Owner@123    | Salon mới (sau khi import) |
-| Customer | quang@gmail.com    | Customer@123 | Khách hàng test            |
+- Kiểm tra browser có bật cookie.
+- Clear cache/cookie.
+- Kiểm tra `session.save_path` trong `php.ini`.
 
-**⚠️ Lưu ý:** Các mật khẩu được hash bằng bcrypt. Nếu cần thay đổi, sử dụng reset script hoặc cập nhật trực tiếp qua phpmyadmin.
+## 📝 Changelog
 
----
+## 📸 Ảnh chụp màn hình đề xuất khi nộp/demo
 
-## ✨ Chức Năng Chính Của Hệ Thống
+### Customer
 
-### 👥 Khách hàng (User / Customer)
+- Trang chủ với autocomplete.
+- Trang kết quả tìm kiếm salon.
+- Trang chi tiết salon.
+- Booking step 1-4.
+- Payment page.
+- My Bookings.
+- Form viết review.
 
-- ✅ Đăng ký, đăng nhập, đăng xuất
-- ✅ Quên mật khẩu / đặt lại mật khẩu
-- ✅ Tìm kiếm salon theo từ khóa, khu vực, danh mục
-- ✅ Xem chi tiết salon, dịch vụ, nhân viên
-- ✅ Đặt lịch hẹn (multi-step wizard)
-- ✅ Xem & quản lý lịch hẹn
-- ✅ Hủy lịch (khi còn hiệu lực)
-- ✅ Thanh toán online ( VNPay) hoặc tại quầy
-- ✅ Viết đánh giá & review
+### Owner
 
-### 💼 Chủ salon (Owner)
+- Owner Dashboard.
+- Owner Bookings.
+- Owner Staff Schedule.
+- Owner Services.
+- Owner Reviews.
 
-- ✅ Dashboard tổng quan (KPI, doanh thu, booking)
-- ✅ Quản lý booking/lịch hẹn
-- ✅ Quản lý dịch vụ
-- ✅ Quản lý nhân viên
-- ✅ Quản lý lịch làm việc
-- ✅ Xem doanh thu & báo cáo
-- ✅ Cập nhật thông tin salon
+### Admin
 
-### 👨‍💼 Quản trị viên (Admin)
+- Admin Dashboard.
+- Admin Users.
+- Admin Salons.
+- Admin Bookings.
+- Admin Reviews.
 
-- ✅ Dashboard hệ thống (KPI toàn bộ)
-- ✅ Quản lý users
-- ✅ Quản lý salons (duyệt, từ chối, xóa)
-- ✅ Quản lý danh mục dịch vụ
-- ✅ Quản lý bookings (xác nhận, hoàn thành, hủy)
-- ✅ Quản lý reviews & ratings
-- ✅ Thống kê & báo cáo hệ thống
+## 🧪 Checklist kiểm thử nhanh
 
----
+### Customer flow
 
-## 🛠️ Cấu Hình Thanh Toán
+- ✅ Đăng ký tài khoản mới.
+- ✅ Đăng nhập.
+- ✅ Quên mật khẩu.
+- ✅ Tìm kiếm salon.
+- ✅ Autocomplete salon/service.
+- ✅ Xem chi tiết salon.
+- ✅ Đặt lịch.
+- ✅ Giữ slot 10 phút.
+- ✅ Thanh toán.
+- ✅ Xem My Bookings.
+- ✅ Hủy lịch nếu hợp lệ.
+- ✅ Viết/sửa/xóa review.
+- ✅ Report review.
 
+### Owner flow
 
-### VNPay Payment
+- ✅ Đăng nhập owner.
+- ✅ Xem dashboard.
+- ✅ Quản lý booking.
+- ✅ Quản lý service.
+- ✅ Quản lý staff.
+- ✅ Quản lý schedule/day off.
+- ✅ Xem và phản hồi review.
+- ✅ Xem doanh thu.
 
-Cập nhật `config/vnpay.php`:
+### Admin flow
 
-```php
-[
-    'version'      => '2.1.0',
-    'tmn_code'     => 'YOUR_TMN_CODE',
-    'hash_secret'  => 'YOUR_HASH_SECRET',
-    'pay_url'      => 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html',
-    'return_url'   => 'https://yourdomain.com/barber-spa/payment/vnpay-return',
-    'ipn_url'      => 'https://yourdomain.com/barber-spa/payment/vnpay-ipn',
-]
-```
+- ✅ Đăng nhập admin.
+- ✅ Xem dashboard tổng quan.
+- ✅ Quản lý user.
+- ✅ Quản lý salon.
+- ✅ Quản lý category.
+- ✅ Quản lý booking.
+- ✅ Kiểm duyệt review.
 
-**Lấy credentials từ:**
+## 📄 Tài liệu bổ sung
 
-- **VNPay:** https://merchant.vnpayment.vn
+- [INSTALL.md](INSTALL.md)
+- [SECURITY.md](SECURITY.md)
+- [DEMO_SCRIPT.md](DEMO_SCRIPT.md)
+- [docs/PROJECT_REPORT.md](docs/PROJECT_REPORT.md)
+- [docs/VIVA_QA.md](docs/VIVA_QA.md)
 
----
+## 📄 License
 
-## 📞 Hỗ Trợ & Liên Hệ
+Dự án này được phát triển cho mục đích học tập và nghiên cứu.
 
-Nếu gặp vấn đề:
+## 🙏 Acknowledgments
 
-📸 Ảnh chụp màn hình đề xuất khi nộp/demo
-User
-![alt text]({93BA7E9A-D89E-4CBE-8617-0F3A54C463F7}.png)
-![alt text]({AC14CC96-ED8E-4AF5-8883-A24366378C1F}.png)
-Admin
-![alt text]({BEACBA17-DE19-4EEB-B504-49380366A867}.png)
+- Bootstrap for UI framework.
+- Chart.js for dashboard charts.
+- Unsplash / Picsum / Pravatar for demo placeholder images.
+- PHP documentation and community examples.
 
----
-
-# 🧪 Gợi ý kiểm thử nhanh (Quick Test Scenarios)
-
-## 1. User Flow (Khách hàng)
-
-- [ ] Đăng ký tài khoản mới  
-- [ ] Đăng nhập  
-- [ ] Tìm kiếm salon  
-- [ ] Đặt lịch  
-- [ ] Xem booking  
-- [ ] Thanh toán giả lập  
-- [ ] Hủy lịch nếu cần  
-
-
-## 2. Owner Flow (Chủ salon)
-
-- [ ] Đăng nhập owner  
-- [ ] Xem dashboard  
-- [ ] Quản lý service  
-- [ ] Quản lý staff  
-- [ ] Cập nhật lịch làm việc  
-- [ ] Xem booking và revenue  
-
-
-## 3. Admin Flow (Quản trị viên)
-
-- [ ] Đăng nhập admin  
-- [ ] Xem dashboard  
-- [ ] Khóa / mở khóa user  
-- [ ] Ẩn / mở salon  
-- [ ] Thêm / sửa / xóa category  
-- [ ] Quản lý booking  
-- [ ] Kiểm duyệt review  
-
-_Hà Nội, tháng 04 năm 2026_
+Hà Nội, tháng 04 năm 2026.
