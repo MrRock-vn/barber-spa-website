@@ -599,6 +599,7 @@ Dự án này được phát triển cho mục đích học tập và nghiên c�
 - PHP documentation and community examples.
   # Giao diện chính
   <img width="1915" height="969" alt="image" src="https://github.com/user-attachments/assets/fd22bc86-8f0a-43fb-be6c-e37911c8b81b" />
+  <img width="1567" height="805" alt="image" src="https://github.com/user-attachments/assets/69ddfdcf-21b7-4b50-b6e1-85366f89ec7c" />
   <img width="1919" height="974" alt="image" src="https://github.com/user-attachments/assets/dbe36291-d29d-4a8f-b196-41e2b06f6ce8" />
   <img width="1914" height="994" alt="image" src="https://github.com/user-attachments/assets/4187925c-166d-48f1-90fb-2f9bd070315c" />
   <img width="1920" height="965" alt="image" src="https://github.com/user-attachments/assets/8cf9fb5a-ec3f-42e0-8f87-dc6bfa997b73" />
