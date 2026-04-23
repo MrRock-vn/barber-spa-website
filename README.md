@@ -597,5 +597,23 @@ Dự án này được phát triển cho mục đích học tập và nghiên c�
 - Chart.js for dashboard charts.
 - Unsplash / Picsum / Pravatar for demo placeholder images.
 - PHP documentation and community examples.
+  # Giao diện chính
+  <img width="1915" height="969" alt="image" src="https://github.com/user-attachments/assets/fd22bc86-8f0a-43fb-be6c-e37911c8b81b" />
+  <img width="1919" height="974" alt="image" src="https://github.com/user-attachments/assets/dbe36291-d29d-4a8f-b196-41e2b06f6ce8" />
+  <img width="1914" height="994" alt="image" src="https://github.com/user-attachments/assets/4187925c-166d-48f1-90fb-2f9bd070315c" />
+  <img width="1920" height="965" alt="image" src="https://github.com/user-attachments/assets/8cf9fb5a-ec3f-42e0-8f87-dc6bfa997b73" />
+  <img width="1831" height="947" alt="image" src="https://github.com/user-attachments/assets/ea8570a8-a22e-4c2e-9931-44d775e49cbe" />
+  <img width="1900" height="937" alt="image" src="https://github.com/user-attachments/assets/d3eca6aa-865e-495e-b982-c89c5d561846" />
+  <img width="1919" height="925" alt="image" src="https://github.com/user-attachments/assets/b4d62b06-bbe3-422e-aa25-410880f34398" />
+  <img width="1917" height="924" alt="image" src="https://github.com/user-attachments/assets/646700bf-ae6e-465d-8db9-ab1ec0db2ec3" />
+
+
+
+
+
+
+
+
+
 
 Hà Nội, tháng 04 năm 2026.
