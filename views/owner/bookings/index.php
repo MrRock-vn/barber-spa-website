@@ -113,14 +113,14 @@ function ownerPaymentStatusBadgeClass(string $status): string
                                             <?php endif; ?>
 
                                             <?php if (in_array($booking['status'], ['pending', 'confirmed'], true)): ?>
-                                                <form method="POST" action="<?= e(BASE_URL . '/owner/bookings') ?>" data-confirm="Xac nhan huy booking nay?">
+                                                <form method="POST" action="<?= e(BASE_URL . '/owner/bookings') ?>" data-confirm="Xác nhận đánh dấu hoàn thành booking này?">
                                                     <?= csrfInput() ?>
                                                     <input type="hidden" name="booking_id" value="<?= e((string) $booking['id']) ?>">
                                                     <input type="hidden" name="action" value="complete">
                                                     <button type="submit" class="btn btn-sm btn-success">Hoàn thành</button>
                                                 </form>
 
-                                                <form method="POST" action="<?= e(BASE_URL . '/owner/bookings') ?>">
+                                                <form method="POST" action="<?= e(BASE_URL . '/owner/bookings') ?>" data-confirm="Bạn có chắc chắn muốn hủy booking này không?">
                                                     <?= csrfInput() ?>
                                                     <input type="hidden" name="booking_id" value="<?= e((string) $booking['id']) ?>">
                                                     <input type="hidden" name="action" value="cancel">

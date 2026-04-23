@@ -45,7 +45,7 @@
                 <div class="hero-image-card">
                     <img
                         loading="lazy"
-                        src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=1200&q=80"
+                        src="<?= e(BASE_URL . '/public/images/hero.jpg') ?>"
                         alt="Barber Spa"
                         class="hero-main-image"
                     >
@@ -140,13 +140,25 @@
         </div>
 
         <div class="row g-4">
+            <?php
+                $salonImages = [
+                    BASE_URL . '/public/images/salon1.jpg',
+                    BASE_URL . '/public/images/salon2.jpg',
+                    BASE_URL . '/public/images/salon3.jpg',
+                    BASE_URL . '/public/images/salon4.jpg',
+                    BASE_URL . '/public/images/salon5.jpg',
+                    BASE_URL . '/public/images/salon6.jpg',
+                    BASE_URL . '/public/images/salon7.jpg'
+                ];
+            ?>
             <?php foreach ($featuredSalons as $salon): ?>
+                <?php $salonImg = $salonImages[$salon['id'] % count($salonImages)]; ?>
                 <div class="col-md-6 col-lg-4">
                     <div class="card salon-card shadow-sm border-0 h-100">
                         <div class="salon-image-wrap">
                             <img
                                 loading="lazy"
-                                src="<?= e($salon['image_url'] ?? 'https://images.unsplash.com/photo-1517832606299-7ae9b720a186?auto=format&fit=crop&w=1200&q=80') ?>"
+                                src="<?= e($salon['image_url'] ?? $salonImg) ?>"
                                 alt="<?= e($salon['name']) ?>"
                                 class="salon-image"
                             >
@@ -245,7 +257,7 @@
                     <div class="promo-slide">
                         <img
                             loading="lazy"
-                            src="https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=1600&q=80"
+                            src="<?= e(BASE_URL . '/public/images/promo1.png') ?>"
                             alt="Promo 1"
                             class="promo-slide-image"
                         >
@@ -266,7 +278,7 @@
                     <div class="promo-slide">
                         <img
                             loading="lazy"
-                            src="https://images.unsplash.com/photo-1517832606299-7ae9b720a186?auto=format&fit=crop&w=1600&q=80"
+                            src="<?= e(BASE_URL . '/public/images/promo2.jpg') ?>"
                             alt="Promo 2"
                             class="promo-slide-image"
                         >
@@ -287,7 +299,7 @@
                     <div class="promo-slide">
                         <img
                             loading="lazy"
-                            src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1600&q=80"
+                            src="<?= e(BASE_URL . '/public/images/promo3.jpg') ?>"
                             alt="Promo 3"
                             class="promo-slide-image"
                         >
@@ -329,7 +341,7 @@
             <div class="col-6 col-md-4 col-lg-3">
                 <a href="<?= e(BASE_URL . '/search') ?>" class="angel-item">
                     <div class="angel-thumb-wrap">
-                        <img loading="lazy" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80" alt="Angel 1" class="angel-thumb">
+                        <img loading="lazy" src="<?= e(BASE_URL . '/public/images/angel1.png') ?>" alt="Angel 1" class="angel-thumb">
                         <div class="angel-ribbon">Senior Stylist</div>
                     </div>
                     <div class="angel-meta">
@@ -342,7 +354,7 @@
             <div class="col-6 col-md-4 col-lg-3">
                 <a href="<?= e(BASE_URL . '/search') ?>" class="angel-item">
                     <div class="angel-thumb-wrap">
-                        <img loading="lazy" src="https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=900&q=80" alt="Angel 2" class="angel-thumb">
+                        <img loading="lazy" src="<?= e(BASE_URL . '/public/images/angel2.jpg') ?>" alt="Angel 2" class="angel-thumb">
                         <div class="angel-ribbon">Master Barber</div>
                     </div>
                     <div class="angel-meta">
@@ -355,7 +367,7 @@
             <div class="col-6 col-md-4 col-lg-3">
                 <a href="<?= e(BASE_URL . '/search') ?>" class="angel-item">
                     <div class="angel-thumb-wrap">
-                        <img loading="lazy" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=900&q=80" alt="Angel 3" class="angel-thumb">
+                        <img loading="lazy" src="<?= e(BASE_URL . '/public/images/angel3.jpg') ?>" alt="Angel 3" class="angel-thumb">
                         <div class="angel-ribbon">Style Advisor</div>
                     </div>
                     <div class="angel-meta">
@@ -368,7 +380,7 @@
             <div class="col-6 col-md-4 col-lg-3">
                 <a href="<?= e(BASE_URL . '/search') ?>" class="angel-item">
                     <div class="angel-thumb-wrap">
-                        <img loading="lazy" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=900&q=80" alt="Angel 4" class="angel-thumb">
+                        <img loading="lazy" src="<?= e(BASE_URL . '/public/images/angel4.jpg') ?>" alt="Angel 4" class="angel-thumb">
                         <div class="angel-ribbon">Grooming Expert</div>
                     </div>
                     <div class="angel-meta">

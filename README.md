@@ -307,11 +307,12 @@ Nếu thấy 404, kiểm tra:
 
 ## 🔐 Tài khoản test
 
-| Vai trò  | Email                | Mật khẩu       | Ghi chú           |
-| -------- | -------------------- | -------------- | ----------------- |
-| Admin    | `admin@barberspa.vn` | `Admin@123`    | Quản trị hệ thống |
-| Owner    | `owner1@gmail.com`   | `Owner@123`    | Chủ salon         |
-| Customer | `an@gmail.com`       | `Customer@123` | Khách hàng test   |
+| Vai trò  | Email                     | Mật khẩu       | Ghi chú            |
+| -------- | ------------------------- | -------------- | ------------------ |
+| Admin    | `admin@barberspa.vn`      | `Admin@123`    | Quản trị hệ thống  |
+| Owner    | `owner1@gmail.com`        | `Owner@123`    | Chủ salon          |
+| Customer | `an@gmail.com`            | `Customer@123` | Khách hàng test    |
+| Customer | `damtrungson00@gmail.com` | `Anhhd@12345`  | test quên mật khẩu |
 
 ⚠️ Nếu đăng nhập sai quá 5 lần, tài khoản sẽ bị khóa tạm 30 phút.
 

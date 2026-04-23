@@ -103,10 +103,22 @@ declare(strict_types=1);
                 </div>
             <?php else: ?>
                 <div class="row g-3">
+                    <?php
+                        $salonImages = [
+                            BASE_URL . '/public/images/salon1.jpg',
+                            BASE_URL . '/public/images/salon2.jpg',
+                            BASE_URL . '/public/images/salon3.jpg',
+                            BASE_URL . '/public/images/salon4.jpg',
+                            BASE_URL . '/public/images/salon5.jpg',
+                            BASE_URL . '/public/images/salon6.jpg',
+                            BASE_URL . '/public/images/salon7.jpg'
+                        ];
+                    ?>
                     <?php foreach ($salons as $salon): ?>
+                        <?php $salonImg = $salonImages[$salon['id'] % count($salonImages)]; ?>
                         <div class="col-md-6">
                             <div class="ui-card ui-card-hover salon-result-card h-100">
-                                <div class="salon-result-media"></div>
+                                <div class="salon-result-media" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.2), rgba(13, 110, 253, 0.12)), url('<?= e($salon['image_url'] ?? $salonImg) ?>') center/cover no-repeat;"></div>
                                 <div class="card-body p-4">
                                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                                         <h4 class="fw-bold mb-0"><?= e($salon['name']) ?></h4>

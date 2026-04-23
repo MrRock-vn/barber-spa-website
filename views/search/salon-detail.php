@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 function getSalonBannerImage(int $salonId): string
 {
-    $banners = [
-        1 => 'https://images.unsplash.com/photo-1585747860715-cd4628902d4a?w=1200&h=400&fit=crop',
-        2 => 'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=1200&h=400&fit=crop',
-        3 => 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=1200&h=400&fit=crop',
-        4 => 'https://images.unsplash.com/photo-1521490494784-f489156e6e0d?w=1200&h=400&fit=crop',
-        5 => 'https://images.unsplash.com/photo-1600881333171-0ac8b8f89477?w=1200&h=400&fit=crop',
-        6 => 'https://images.unsplash.com/photo-1599623166732-a47b7ce179e2?w=1200&h=400&fit=crop',
+    $images = [
+        BASE_URL . '/public/images/salon1.jpg',
+        BASE_URL . '/public/images/salon2.jpg',
+        BASE_URL . '/public/images/salon3.jpg',
+        BASE_URL . '/public/images/salon4.jpg',
+        BASE_URL . '/public/images/salon5.jpg',
+        BASE_URL . '/public/images/salon6.jpg',
+        BASE_URL . '/public/images/salon7.jpg',
+        BASE_URL . '/public/images/hero.jpg',
     ];
-    return $banners[$salonId] ?? 'https://images.unsplash.com/photo-1585747860715-cd4628902d4a?w=1200&h=400&fit=crop';
+    return $images[$salonId % count($images)];
 }
 ?>
 
@@ -96,7 +98,17 @@ function getSalonBannerImage(int $salonId): string
                 <div class="row g-3">
                     <?php foreach ($images as $index => $image): ?>
                         <div class="col-md-4 col-sm-6">
-                            <img src="https://picsum.photos/400/300?random=<?= $index ?>" alt="Salon <?= $salon['name'] ?>" class="rounded-3 w-100" style="height: 200px; object-fit: cover; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#imageModal" onclick="document.getElementById('modalImage').src=this.src">
+                            <?php
+                                $galleryImages = [
+                                    BASE_URL . '/public/images/promo1.png',
+                                    BASE_URL . '/public/images/promo2.jpg',
+                                    BASE_URL . '/public/images/promo3.jpg',
+                                    BASE_URL . '/public/images/salon2.jpg',
+                                    BASE_URL . '/public/images/salon3.jpg'
+                                ];
+                                $imgSrc = $galleryImages[$index % count($galleryImages)];
+                            ?>
+                            <img src="<?= e($imgSrc) ?>" alt="Salon <?= e($salon['name']) ?>" class="rounded-3 w-100" style="height: 200px; object-fit: cover; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#imageModal" onclick="document.getElementById('modalImage').src=this.src">
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -116,7 +128,23 @@ function getSalonBannerImage(int $salonId): string
                         <div class="col-md-6">
                             <div class="card border-0 bg-white shadow-sm h-100 overflow-hidden" style="transition: transform 0.2s, box-shadow 0.2s;">
                                 <div style="height: 150px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); overflow: hidden;">
-                                    <img src="https://picsum.photos/400/150?random=<?= $service['id'] ?>" alt="<?= $service['name'] ?>" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.9;">
+                                    <?php
+                                        $serviceImages = [
+                                            BASE_URL . '/public/images/service1.png',
+                                            BASE_URL . '/public/images/service2.png',
+                                            BASE_URL . '/public/images/service3.png',
+                                            BASE_URL . '/public/images/service4.png',
+                                            BASE_URL . '/public/images/service5.jpg',
+                                            BASE_URL . '/public/images/service6.jpg',
+                                            BASE_URL . '/public/images/service7.jpg',
+                                            BASE_URL . '/public/images/service8.jpg',
+                                            BASE_URL . '/public/images/service9.jpg',
+                                            BASE_URL . '/public/images/service10.jpg'
+                                        ];
+                                        // Use db image if exists, else fallback to random
+                                        $svcImg = !empty($service['image']) ? BASE_URL . '/' . $service['image'] : $serviceImages[$service['id'] % count($serviceImages)];
+                                    ?>
+                                    <img src="<?= e($svcImg) ?>" alt="<?= e($service['name']) ?>" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.9;" onerror="this.src='<?= e($serviceImages[$service['id'] % count($serviceImages)]) ?>'">
                                 </div>
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
@@ -144,7 +172,27 @@ function getSalonBannerImage(int $salonId): string
                         <div class="col-md-4 col-sm-6">
                             <div class="card border-0 bg-white shadow-sm h-100 text-center overflow-hidden">
                                 <div style="height: 180px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); overflow: hidden;">
-                                    <img src="https://i.pravatar.cc/200?img=<?= ($staff['id'] ?? rand(1, 100)) ?>" alt="<?= $staff['name'] ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                                    <?php
+                                        $staffImages = [
+                                            BASE_URL . '/public/images/angel1.png',
+                                            BASE_URL . '/public/images/angel2.jpg',
+                                            BASE_URL . '/public/images/angel3.jpg',
+                                            BASE_URL . '/public/images/angel4.jpg',
+                                            BASE_URL . '/public/images/angel5.jpg',
+                                            BASE_URL . '/public/images/angel6.jpg',
+                                            BASE_URL . '/public/images/angel7.png',
+                                            BASE_URL . '/public/images/angel8.png',
+                                            BASE_URL . '/public/images/angel9.png',
+                                            BASE_URL . '/public/images/angel10.png',
+                                            BASE_URL . '/public/images/angel11.png',
+                                            BASE_URL . '/public/images/angel12.png',
+                                            BASE_URL . '/public/images/angel13.png',
+                                            BASE_URL . '/public/images/angel14.jpg',
+                                            BASE_URL . '/public/images/angel15.jpg'
+                                        ];
+                                        $stfImg = $staffImages[($staff['id'] ?? rand(0, 14)) % count($staffImages)];
+                                    ?>
+                                    <img src="<?= e($stfImg) ?>" alt="<?= e($staff['name']) ?>" style="width: 100%; height: 100%; object-fit: cover;">
                                 </div>
                                 <div class="card-body">
                                     <h6 class="fw-bold mb-1"><?= e($staff['name']) ?></h6>

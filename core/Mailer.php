@@ -63,7 +63,6 @@ class Mailer
             
             if (!$socket) {
                 error_log('SMTP Connection Error: ' . $errstr . ' (' . $errno . ')');
-                // Fallback to PHP mail()
                 return self::sendViaPHP($toEmail, $toName, $subject, $body, $fromEmail, $fromName);
             }
 
@@ -80,8 +79,6 @@ class Mailer
             // Send EHLO
             fwrite($socket, "EHLO localhost\r\n");
             $response = fgets($socket, 1024);
-            
-            // Read other response lines from EHLO
             while (substr($response, 3, 1) != ' ') {
                 $response = fgets($socket, 1024);
                 if (!$response) break;
@@ -122,7 +119,7 @@ class Mailer
                 return self::sendViaPHP($toEmail, $toName, $subject, $body, $fromEmail, $fromName);
             }
 
-            // Send username (base64 encoded)
+            // Send username
             fwrite($socket, base64_encode($username) . "\r\n");
             $response = fgets($socket, 1024);
             
@@ -132,7 +129,7 @@ class Mailer
                 return self::sendViaPHP($toEmail, $toName, $subject, $body, $fromEmail, $fromName);
             }
 
-            // Send password (base64 encoded)
+            // Send password
             fwrite($socket, base64_encode($password) . "\r\n");
             $response = fgets($socket, 1024);
             
@@ -172,10 +169,20 @@ class Mailer
                 return self::sendViaPHP($toEmail, $toName, $subject, $body, $fromEmail, $fromName);
             }
 
+            // Normalize body newlines to CRLF to prevent bare line feeds
+            $body = str_replace(["\r\n", "\r", "\n"], "\r\n", $body);
+            
+            // Encode subject to support UTF-8 characters (like Vietnamese)
+            $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+
+            $messageId = md5(uniqid((string)microtime(true), true)) . "@barberspa.vn";
+
             // Build email message
-            $message = "To: " . $toName . " <" . $toEmail . ">\r\n";
+            $message = "Date: " . date('r') . "\r\n";
+            $message .= "Message-ID: <" . $messageId . ">\r\n";
+            $message .= "To: " . $toName . " <" . $toEmail . ">\r\n";
             $message .= "From: " . $fromName . " <" . $fromEmail . ">\r\n";
-            $message .= "Subject: " . $subject . "\r\n";
+            $message .= "Subject: " . $encodedSubject . "\r\n";
             $message .= "MIME-Version: 1.0\r\n";
             $message .= "Content-type: text/html; charset=UTF-8\r\n";
             $message .= "\r\n";
@@ -202,4 +209,3 @@ class Mailer
         }
     }
 }
-
