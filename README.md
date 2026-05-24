@@ -609,6 +609,12 @@ Dự án này được phát triển cho mục đích học tập và nghiên c�
   <img width="1917" height="924" alt="image" src="https://github.com/user-attachments/assets/646700bf-ae6e-465d-8db9-ab1ec0db2ec3" />
 
 
+## 📺 Video Demo
+- **Link Video:** 
+
+## 🌐 Link Online (Deploy)
+- **Website:** [https://sonokela.online/](https://sonokela.online/)
+
 
 
 
