@@ -610,7 +610,7 @@ Dự án này được phát triển cho mục đích học tập và nghiên c�
 
 
 ## 📺 Video Demo
-- **Link Video:** 
+- **Link Video:** https://drive.google.com/drive/folders/15EbfeE3ydUdFkIWciAJl4U6_bNz2mmBt
 
 ## 🌐 Link Online (Deploy)
 - **Website:** [https://sonokela.online/](https://sonokela.online/)
